@@ -1,20 +1,23 @@
 #!/usr/bin/env python
 
 import struct
+import wx
 from socket import *
 from structures import *
 import threading
+import gui
 
 class SocketThread(threading.Thread):
-    def __init__(self, session):
+    def __init__(self, session, notify):
         threading.Thread.__init__(self)
+        self.notify = notify
         self.session = session
         self.running = True
 
         #open socket
         self.socket = socket(AF_INET, SOCK_DGRAM)
         self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.socket.bind(('localhost', 20777))
+        self.socket.bind(('', 20777))
 
         self.start()
 
@@ -32,6 +35,8 @@ class SocketThread(threading.Thread):
             lap_finished = not self.session.current_lap.add_packet(packet)
             if lap_finished:
                 pass #signal an event to the GUI
+            event = gui.wxNewPacket()
+            wx.PostEvent(self.notify, event)
 
         #we've signalled for the recv thread to stop, so do cleanup
         self.socket.close()

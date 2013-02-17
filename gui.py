@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 
 import wx
+from structures import *
+from socket_handler import *
+from wx.lib.newevent import NewEvent
+
+#create an event for the socket handler to hit
+wxNewPacket, EVT_NEW_PACKET = NewEvent()
 
 def make_label(parent, text):
     font = wx.Font(30, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, 
@@ -16,6 +22,7 @@ class FieldGrid(wx.GridSizer):
         wx.GridSizer.__init__(self, rows, columns, 3, 3)
         self.vertical = True
         self.parent = parent
+        self.labels = list()
 
         if self.vertical:
             assert len(fields) == rows
@@ -25,12 +32,15 @@ class FieldGrid(wx.GridSizer):
             assert rows == 2
 
         elements = list()
-        for key, value in fields.iteritems():
+        for field in fields:
             #todo horizontal alignment
+            key = field[0]
+            value = field[1]
             label_alignment =  wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL
             value_alignment =  wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL
+            self.labels.append(make_label(parent, value))
             elements.append((make_label(parent, key), 0, label_alignment))
-            elements.append((make_label(parent, value), 0, value_alignment))
+            elements.append((self.labels[-1], 0, value_alignment))
         self.AddMany(elements)
             
 
@@ -57,26 +67,24 @@ class ExampleFrame(wx.Frame):
         #test_label = make_label(self, "+0.534352")
         #test_label.SetLabel("test")
 
+        self.Bind(EVT_NEW_PACKET, self.on_new_packet)
+
         #todo make this an ordered dict
-        session_summary = {
-            '1:':'0',
-            '2:':'0',
-            '3:':'10',
-            }
+        session_summary = [
+            ('1:','0'),
+            ('2:','0'),
+            ('3:','10'),
+            ]
         fg = FieldGrid(self, 2, 3, session_summary)
-        """gs = wx.GridSizer(2, 2, 3, 3)
-        gs.AddMany([(make_label(self, "Lap delta:"), 
-                     0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL),
-                    (test_label,
-                     0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL),
-                    (wx.StaticText(self, -1, 'Something else:'), 
-                     0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL),
-                    (wx.StaticText(self, -1, '12345'), 
-                     0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)])
-        sizer.Add(gs, 1, wx.EXPAND)"""
         self.SetSizer(fg)
         self.Show()
 
-app = wx.App(False)
-ExampleFrame(None)
-app.MainLoop()
+    def on_new_packet(self, event):
+        print "Got new packet event"
+
+if __name__ == '__main__':
+    s = Session()
+    app = wx.App(False)
+    f = ExampleFrame(None)
+    thread = SocketThread(s, f.on_new_packet)
+    app.MainLoop()
