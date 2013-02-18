@@ -3,6 +3,7 @@
 import wx
 from structures import *
 from socket_handler import *
+from wx.lib.pubsub import Publisher
 
 def make_label(parent, text):
     font = wx.Font(30, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, 
@@ -55,6 +56,8 @@ class SessionSummary(wx.Panel):
 
 class ExampleFrame(wx.Frame):
     def __init__(self, parent):
+        Publisher().subscribe(self.on_lap_end, 'Session.FastestLap')
+        Publisher().subscribe(self.on_lap_end, 'Session.NewPacket')
         wx.Frame.__init__(self, parent)
         sizer = wx.BoxSizer(wx.VERTICAL)
         #test_label = make_label(self, "+0.534352")
@@ -69,6 +72,12 @@ class ExampleFrame(wx.Frame):
         fg = FieldGrid(self, 2, 3, session_summary)
         self.SetSizer(fg)
         self.Show()
+
+    def on_lap_end(self, packet):
+        print "Lap ended"
+
+    def on_fastest_lap(self, lap):
+        print "New fastest lap"
 
 class MainApp(wx.App):
     def OnInit(self):
