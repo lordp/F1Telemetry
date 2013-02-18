@@ -3,10 +3,6 @@
 import wx
 from structures import *
 from socket_handler import *
-from wx.lib.newevent import NewEvent
-
-#create an event for the socket handler to hit
-wxNewPacket, EVT_NEW_PACKET = NewEvent()
 
 def make_label(parent, text):
     font = wx.Font(30, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, 
@@ -14,7 +10,6 @@ def make_label(parent, text):
     txt = wx.StaticText(parent, label=text)
     txt.SetFont(font)
     return txt
-
 
 class FieldGrid(wx.GridSizer):
     def __init__(self, parent, columns, rows, fields):
@@ -42,7 +37,6 @@ class FieldGrid(wx.GridSizer):
             elements.append((make_label(parent, key), 0, label_alignment))
             elements.append((self.labels[-1], 0, value_alignment))
         self.AddMany(elements)
-            
 
 class SessionSummary(wx.Panel):
     def __init__(self, parent, session):
@@ -59,15 +53,12 @@ class SessionSummary(wx.Panel):
             self.fastest_lap_no = self.session.fastest_lap.lap_no
             self.fastest_lap_time = self.session.fastest_lap.lap_time
 
-
 class ExampleFrame(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent)
         sizer = wx.BoxSizer(wx.VERTICAL)
         #test_label = make_label(self, "+0.534352")
         #test_label.SetLabel("test")
-
-        self.Bind(EVT_NEW_PACKET, self.on_new_packet)
 
         #todo make this an ordered dict
         session_summary = [
@@ -79,12 +70,15 @@ class ExampleFrame(wx.Frame):
         self.SetSizer(fg)
         self.Show()
 
-    def on_new_packet(self, event):
-        print "Got new packet event"
+class MainApp(wx.App):
+    def OnInit(self):
+        self.frame = ExampleFrame(None)
+        self.frame.Show(True)
+        self.SetTopWindow(self.frame)
+        s = Session()
+        thread = SocketThread(s, self.frame)
+        return True 
 
 if __name__ == '__main__':
-    s = Session()
-    app = wx.App(False)
-    f = ExampleFrame(None)
-    thread = SocketThread(s, f.on_new_packet)
+    app = MainApp(False)
     app.MainLoop()
