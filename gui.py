@@ -3,7 +3,6 @@
 import wx
 from structures import *
 from socket_handler import *
-from wx.lib.pubsub import Publisher
 
 def make_label(parent, text):
     font = wx.Font(30, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, 
@@ -18,7 +17,9 @@ class FieldGrid(wx.GridSizer):
         wx.GridSizer.__init__(self, rows, columns, 3, 3)
         self.vertical = True
         self.parent = parent
-        self.labels = list()
+        self.labels = dict()
+        for field in fields:
+            self.labels[field[0]] = make_label(parent, field[1])
 
         if self.vertical:
             assert len(fields) == rows
@@ -34,10 +35,12 @@ class FieldGrid(wx.GridSizer):
             value = field[1]
             label_alignment =  wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL
             value_alignment =  wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL
-            self.labels.append(make_label(parent, value))
             elements.append((make_label(parent, key), 0, label_alignment))
-            elements.append((self.labels[-1], 0, value_alignment))
+            elements.append((self.labels[key], 0, value_alignment))
         self.AddMany(elements)
+
+    def __getattr__(self, value):
+        return self.labels[value]
 
 class SessionSummary(wx.Panel):
     def __init__(self, parent, session):
@@ -55,33 +58,33 @@ class SessionSummary(wx.Panel):
             self.fastest_lap_time = self.session.fastest_lap.lap_time
 
 class ExampleFrame(wx.Frame):
-    def __init__(self, parent):
-        Publisher().subscribe(self.on_lap_end, 'Session.FastestLap')
-        Publisher().subscribe(self.on_lap_end, 'Session.NewPacket')
-        wx.Frame.__init__(self, parent)
+    def __init__(self, parent, id_no):
+        wx.Frame.__init__(self, parent, id_no)
+        #todo, move send message into the session and out of the sock handler
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         #test_label = make_label(self, "+0.534352")
         #test_label.SetLabel("test")
 
         #todo make this an ordered dict
         session_summary = [
-            ('1:','0'),
+            ('delta','0.0'),
             ('2:','0'),
             ('3:','10'),
             ]
-        fg = FieldGrid(self, 2, 3, session_summary)
-        self.SetSizer(fg)
+        self.fg = FieldGrid(self, 2, 3, session_summary)
+        self.SetSizer(self.fg)
         self.Show()
 
-    def on_lap_end(self, packet):
-        print "Lap ended"
+    def on_new_packet(self, packet):
+        self.fg.delta.SetLabel(str(packet.lap_time))
 
     def on_fastest_lap(self, lap):
         print "New fastest lap"
 
 class MainApp(wx.App):
     def OnInit(self):
-        self.frame = ExampleFrame(None)
+        self.frame = ExampleFrame(None, -1)
         self.frame.Show(True)
         self.SetTopWindow(self.frame)
         s = Session()

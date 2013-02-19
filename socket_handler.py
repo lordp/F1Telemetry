@@ -5,8 +5,7 @@ import wx
 from socket import *
 from structures import *
 import threading
-import gui
-from wx.lib.pubsub import Publisher
+from gui import *
 
 
 class SocketThread(threading.Thread):
@@ -21,6 +20,7 @@ class SocketThread(threading.Thread):
         self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.socket.bind(('', 20777))
 
+        print "starting thread"
         self.start()
 
     def close(self):
@@ -32,12 +32,12 @@ class SocketThread(threading.Thread):
             packet = Packet()
             raw_packet = self.socket.recv(struct.calcsize(packet.format))
             packet.decode_raw_packet(raw_packet)
-            Publisher().sendMessage('Session.NewPacket', None)
+            wx.CallAfter(self.notify.on_new_packet, packet)
 
             #add this packet object to the current session
             lap_finished = not self.session.current_lap.add_packet(packet)
             if lap_finished:
-                Publisher().sendMessage('Session.FastestLap', None)
+                pass
 
         #we've signalled for the recv thread to stop, so do cleanup
         self.socket.close()
