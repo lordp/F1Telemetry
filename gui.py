@@ -79,16 +79,19 @@ class ExampleFrame(wx.Frame):
     def on_new_packet(self, packet):
         self.fg.delta.SetLabel(str(packet.lap_time))
 
-    def on_fastest_lap(self, lap):
+    def on_fastest_lap(self, new_lap, old_lap):
         print "New fastest lap"
+
+    def on_new_lap(self, new_lap, old_lap):
+        print "Lap finished"
 
 class MainApp(wx.App):
     def OnInit(self):
         self.frame = ExampleFrame(None, -1)
         self.frame.Show(True)
         self.SetTopWindow(self.frame)
-        s = Session()
-        thread = SocketThread(s, self.frame)
+        s = Session(callback_target = self.frame)
+        thread = SocketThread(s)
         return True 
 
 if __name__ == '__main__':
