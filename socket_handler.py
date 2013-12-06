@@ -24,20 +24,22 @@ class SocketThread(threading.Thread):
     def run(self):
         while self.running:
             #populate a packet object
-            packet = Packet()
             #todo, remove calcsize from here and do it in the pkt object
-            raw_packet = self.socket.recv(struct.calcsize(packet.format))
-            packet.decode_raw_packet(raw_packet)
+            print "Waiting"
+            size = struct.calcsize('f' * len(Packet.keys))
+            raw_packet = self.socket.recv(size)
+            packet = Packet(raw_packet)
+            
 
             #add this packet object to the current session
-            lap_finished = not self.session.current_lap.add_packet(packet)
-            if lap_finished:
-                pass
+            self.session.current_lap.add_packet(packet)
 
         #we've signalled for the recv thread to stop, so do cleanup
         self.socket.close()
 
 if __name__ == '__main__':
+    #Threading probably not required here, but could make adding a GUI later
+    #a bit easier?
     s = Session()
     thread = SocketThread(s);
     while True:
