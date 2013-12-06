@@ -56,7 +56,6 @@ class Lap(object):
     def finish_lap(self):
         self.lap_time = self.packets[-1].lap_time
         self.lap_number = self.packets[-1].lap_no
-        #callbacks
         self.session.new_lap() #this updates current lap to a new lap
 
 class Session(object):
@@ -69,10 +68,10 @@ class Session(object):
         self.current_lap = self.laps[0]
 
     def new_lap(self):
-        print "new lap"
+        self.logger.lap(self.current_lap)
+            
         #record a fastest lap if we don't already have one
         if not self.fastest_lap:
-            print "time set"
             self.fastest_lap = self.current_lap
 
         #update fastest lap if required
