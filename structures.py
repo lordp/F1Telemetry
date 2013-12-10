@@ -25,16 +25,15 @@ class Packet(object):
             raise AttributeError
 
     def __len__(self):
-        return struct.calcsize('f' * len(keys))
+        return struct.calcsize('f' * len(self.keys))
 
     def decode_raw_packet(self, raw_packet):
-        data = list(struct.unpack(self.format, raw_packet))
+        data = list(struct.unpack('f' * len(self.keys), raw_packet))
         self.data = dict(zip(self.keys, data))
 
 class Lap(object):
-    def __init__(self, session, callback_target = None):  
+    def __init__(self, session):  
         self.session = session
-        self.callback_target = callback_target
         self.packets = list()
         self.lap_time = 0
         self.lap_number = 0
@@ -59,17 +58,16 @@ class Lap(object):
         self.session.new_lap() #this updates current lap to a new lap
 
 class Session(object):
-    def __init__(self):
+    def __init__(self, logger):
+        self.logger = logger
         self.last_lap = None
         self.current_lap = None
         self.fastest_lap = None
         self.laps = list()
-        self.laps.append(Lap(self, self.callback_target))
+        self.laps.append(Lap(self))
         self.current_lap = self.laps[0]
 
-    def new_lap(self):
-        self.logger.lap(self.current_lap)
-            
+    def new_lap(self):            
         #record a fastest lap if we don't already have one
         if not self.fastest_lap:
             self.fastest_lap = self.current_lap
@@ -79,6 +77,7 @@ class Session(object):
             self.fastest_lap = self.current_lap
 
         #create a new lap
-        new_lap = Lap(self, self.callback_target)
+        self.logger.lap(self.current_lap) #todo new thread?
+        new_lap = Lap(self)
         self.current_lap = new_lap
         self.laps.append(new_lap)

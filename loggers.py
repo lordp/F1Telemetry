@@ -36,10 +36,10 @@ class GoogleDocs(Logger):
         self.column = self._find_my_column(self.laps)
 
         #read
-        self.row = 2
+        self.row = 4
 
     def _find_my_column(self, worksheet):
-        row = worksheet.row_valugit addes(1)
+        row = worksheet.row_values(1)
         if self.screen_name in row:
             return row.index(self.screen_name) + 1
 
@@ -51,13 +51,7 @@ class GoogleDocs(Logger):
     def lap(self, lap):
         print self.row, lap.lap_time
 
-        #TODO: replace this with something nicer
-        sec = lap.lap_time
-        msec = (sec - math.floor(sec)) * 1000
-        print "msec", msec
-        nice_time = datetime.timedelta(seconds=sec)
-        print str(nice_time)
-        self.laps.update_cell(self.row, self.column, str(nice_time))
+        self.laps.update_cell(self.row, self.column, lap.lap_time)
         self.row += 1
 
 if __name__ == '__main__':

@@ -5,6 +5,8 @@ from socket import *
 from structures import *
 import threading
 
+import loggers
+
 class SocketThread(threading.Thread):
     def __init__(self, session):
         threading.Thread.__init__(self)
@@ -22,10 +24,10 @@ class SocketThread(threading.Thread):
         self.running = False
 
     def run(self):
+        print "Waiting"
         while self.running:
             #populate a packet object
             #todo, remove calcsize from here and do it in the pkt object
-            print "Waiting"
             size = struct.calcsize('f' * len(Packet.keys))
             raw_packet = self.socket.recv(size)
             packet = Packet(raw_packet)
@@ -40,7 +42,7 @@ class SocketThread(threading.Thread):
 if __name__ == '__main__':
     #Threading probably not required here, but could make adding a GUI later
     #a bit easier?
-    s = Session()
+    s = Session(loggers.GoogleDocs())
     thread = SocketThread(s);
     while True:
         pass #todo print out some stuff
