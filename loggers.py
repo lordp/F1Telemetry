@@ -1,11 +1,14 @@
 import datetime
 import math
+import ConfigParser
 import gspread
 
 class Logger(object):
     def __init__(self):
         #Should also load this from a file...
-        self.screen_name = "Physfix"
+        self.config = ConfigParser.ConfigParser()
+        self.config.read('config.ini')
+        self.screen_name = self.config.get("logger", "screen_name")
 
     def lap(self, lap):
         pass
@@ -23,10 +26,10 @@ class GoogleDocs(Logger):
     def __init__(self):
         super(GoogleDocs, self).__init__()
         #TODO: think of a better way of configuring this! Perhaps INI file?
-        self.username = "USERNAME"
-        self.password = "PASSWORD"
-        self.spreadsheet_name = "F1 telemetry template"
-        self.laps_worksheet_name = "Laps"
+        self.username = self.config.get("logger", "username")
+        self.password = self.config.get("logger", "password")
+        self.spreadsheet_name = self.config.get("logger", "sheet_name")
+        self.laps_worksheet_name = self.config.get("logger", "laps_worksheet")
 
         #Now connect to Google Docs
         #TODO: catch exceptions here and everywhere for that matter...
@@ -44,7 +47,7 @@ class GoogleDocs(Logger):
             return row.index(self.screen_name) + 1
 
         #TODO: there is a race here if there is more than one client
-        column = len(row) + 2
+        column = len(row) + 1
         self.laps.update_cell(1, column, self.screen_name)
         return column
 
