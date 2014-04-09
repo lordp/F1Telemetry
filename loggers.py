@@ -2,6 +2,7 @@ import datetime
 import math
 import ConfigParser
 import gspread
+import requests
 
 class Logger(object):
     def __init__(self):
@@ -57,7 +58,36 @@ class GoogleDocs(Logger):
         self.laps.update_cell(self.row, self.column, lap.lap_time)
         self.row += 1
 
+class RacingLeagueCharts(Logger):
+    def __init__(self, driver):
+        super(RacingLeagueCharts, self).__init__()
+        self.session_id = 0
+        self.driver = driver
+        self.session_url = 'https://racingleaguecharts.com/sessions/register'
+        self.lap_url = 'https://racingleaguecharts.com/laps'
+
+    def request_session(self, packet):
+        payload = { "driver": self.driver, "track": packet.track_length, "type": packet.session_type }
+        r = requests.post(self.session_url, data=payload, verify=False)
+        if r.status_code == 200:
+            self.session_id = r.json()['session_id']
+            print self.session_id
+            return True
+        return False
+
+    def send_sector(self, sector):
+        print sector.sector_number, sector.sector_time
+
+    def lap(self, lap):
+        payload = { "session_id": self.session_id, "lap_number": lap.lap_number, "sector_1": lap.sector_1, "sector_2": lap.sector_2, "total": lap.lap_time }
+        r = requests.post(self.lap_url, data=payload, verify=False)
+        if r.status_code == 200:
+            return True
+        return False
+
 if __name__ == '__main__':
-    g=GoogleDocs()
+    #g=GoogleDocs()
+    r = RacingLeagueCharts()
     x=LapTest()
-    g.lap(x)
+    #g.lap(x)
+    r.lap(x)
