@@ -16,10 +16,10 @@ class Logger(object):
         pass
 
 class RacingLeagueCharts(Logger):
-    def __init__(self, driver, messages_text):
+    def __init__(self, driver, status_bar):
         super(RacingLeagueCharts, self).__init__(driver)
         self.session_id = 0
-        self.messages = messages_text
+        self.status_bar = status_bar
         self.session_url = 'https://racingleaguecharts.com/sessions/register'
         self.lap_url = 'https://racingleaguecharts.com/laps'
 
@@ -28,7 +28,7 @@ class RacingLeagueCharts(Logger):
         r = requests.post(self.session_url, data=payload, verify=False)
         if r.status_code == 200:
             self.session_id = r.json()['session_id']
-            self.messages.SetLabel('Session id: {0}'.format(self.session_id))
+            self.status_bar.SetStatusText('Session id: {0}'.format(self.session_id))
             return True
         return False
 

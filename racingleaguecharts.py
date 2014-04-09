@@ -140,7 +140,7 @@ class RLCGui(wx.Frame):
                 wx.MessageBox('You must enter a name to start the logger', 'Info', wx.OK | wx.ICON_INFORMATION)
                 return False
             self.start_btn.SetLabel('&Stop')
-            logger = loggers.RacingLeagueCharts(self.your_name.GetValue(), self.messages_text)
+            logger = loggers.RacingLeagueCharts(self.your_name.GetValue(), self.status_bar)
             session = Session(logger)
             self.thread = SocketThread(session);
 
