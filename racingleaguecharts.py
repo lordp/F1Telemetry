@@ -3,6 +3,8 @@
 
 import wx
 import requests
+from lxml import etree
+import os
 from socket_handler import *
 import loggers
 from structures import *
@@ -16,7 +18,11 @@ class RLCGui(wx.Frame):
             style = wx.CAPTION | wx.SYSTEM_MENU | wx.CLOSE_BOX
         )
 
+        self.config_path = os.path.join(os.path.expandvars("%userprofile%"),"Documents\\my games\\formulaone2013\\hardwaresettings\\hardware_settings_config.xml")
+
+        self.check_config()
         self.InitUI()
+        self.update_gui(self.enabled)
         self.Show()
 
     def InitUI(self):
@@ -37,13 +43,18 @@ class RLCGui(wx.Frame):
         vbox.Add((-1, 20))
 
         hbox_messages = wx.BoxSizer(wx.HORIZONTAL)
-        self.messages_text = wx.StaticText(panel, label = 'Choose or enter the driver name above, and click start')
+        self.messages_text = wx.StaticText(panel)
         hbox_messages.Add(self.messages_text)
-        vbox.Add(hbox_messages, flag = wx.ALIGN_CENTER_HORIZONTAL)
+        vbox.Add(hbox_messages)
 
         vbox.Add((-1, 20))
 
         hbox_buttons = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.enable_btn = wx.Button(panel, size = (70, 30))
+        self.enable_btn.Bind(wx.EVT_BUTTON, self.toggle_config)
+        hbox_buttons.Add(self.enable_btn)
+
         self.start_btn = wx.Button(panel, label = '&Start', size = (70,30))
         self.start_btn.Bind(wx.EVT_BUTTON, self.start_logging)
         hbox_buttons.Add(self.start_btn)
@@ -55,10 +66,51 @@ class RLCGui(wx.Frame):
 
         panel.SetSizer(vbox)
 
+    def load_config(self):
+        tree = etree.parse(self.config_path)
+        return tree.xpath('motion')[0]
+
+    def check_config(self):
+        self.motion = self.load_config()
+        self.enabled = (self.motion.get('enabled') == 'true' and \
+            self.motion.get('ip') == '127.0.0.1' and \
+            self.motion.get('port') == '20777' and \
+            self.motion.get('extradata') == '3')
+
+    def toggle_config(self, e):
+        if self.enabled:
+            self.motion.set('enabled', 'false')
+            self.update_gui(False)
+        else:
+            self.motion.set('enabled', 'true')
+            self.motion.set('ip', '127.0.0.1')
+            self.motion.set('port', '20777')
+            self.motion.set('extradata', '3')
+            self.update_gui(True)
+
+        config = open(self.config_path, 'w')
+        config.write(etree.tostring(self.motion.getparent(), encoding = 'utf-8', xml_declaration = True))
+        config.close()
+
+    def update_gui(self, enabled):
+        if enabled:
+            msg = 'Choose or enter the driver name above, and click start'
+            self.messages_text.SetLabel(msg)
+            self.enable_btn.SetLabel('&Disable')
+            self.start_btn.Enable()
+            self.enabled = True
+        else:
+            msg = 'The telemetry system is not enabled'
+            self.messages_text.SetLabel(msg)
+            self.enable_btn.SetLabel('&Enable')
+            self.start_btn.Disable()
+            self.enabled = False
+
+
     def start_logging(self, e):
         if hasattr(self, 'thread'):
-          self.thread.close()
-          self.start_btn.SetLabel('&Start')
+            self.thread.close()
+            self.start_btn.SetLabel('&Start')
         else:
             name = self.your_name.GetValue()
             if name == "":
