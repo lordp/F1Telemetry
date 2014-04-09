@@ -3,7 +3,7 @@ F1Telemetry
 
 The code here is a basic live timing system for Codemasters F1 2013 racing game, used in conjunction with the Racing League Charts website - https://racingleaguecharts.com
 
-## Requirements ##
+## Run Time Requirements ##
 
 You may need to install a C++ Redistributable from Microsoft. You can download this [here](https://www.microsoft.com/en-us/download/confirmation.aspx?id=29).
 
@@ -21,3 +21,9 @@ and you need to look for a line near the bottom starts with "&lt;motion" and cha
 
 1. Unzip to a convenient directory
 2. Run racingleaguecharts.exe
+
+## Development Requirements ##
+
+1. [wxPython](http://wxpython.org)
+2. [python-requests](http://python-requests.org)
+3. [lxml](http://lxml.de/)
