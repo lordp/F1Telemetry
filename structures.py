@@ -52,6 +52,9 @@ class Lap(object):
         self.packets = list()
         self.lap_time = 0
         self.lap_number = 0
+        self.sector_1 = None
+        self.sector_2 = None
+        self.sector_3 = None
 
     def get_closest_packet(self, reference_packet):
         def packet_seperation(packet):
@@ -59,6 +62,12 @@ class Lap(object):
         return sorted(self.packets, key=packet_seperation)[0]
 
     def add_packet(self, packet):
+        if packet.time_sector1 > 0 and self.sector_1 == None:
+            self.sector_1 = packet.time_sector1
+
+        if packet.time_sector2 > 0 and self.sector_2 == None:
+            self.sector_2 = packet.time_sector2
+
         #check if lap has finished, if it hasn't store this packet
         if len(self.packets) > 1 and \
                 packet.lap_time < self.packets[-1].lap_time:
@@ -70,6 +79,7 @@ class Lap(object):
     def finish_lap(self):
         self.lap_time = self.packets[-1].lap_time
         self.lap_number = self.packets[-1].lap_no
+        self.sector_3 = self.lap_time - self.sector_2 - self.sector_1)
         self.session.new_lap() #this updates current lap to a new lap
 
 class Session(object):
