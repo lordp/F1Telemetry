@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import wx
+import requests
 from socket_handler import *
 import loggers
 from structures import *
@@ -27,14 +28,16 @@ class RLCGui(wx.Frame):
         hbox_details = wx.BoxSizer(wx.HORIZONTAL)
         your_name_label = wx.StaticText(panel, label = 'Your name:')
         hbox_details.Add(your_name_label, flag = wx.RIGHT|wx.TOP, border = 4)
-        self.your_name = wx.TextCtrl(panel)
+
+        drivers = self.get_drivers()
+        self.your_name = PromptingComboBox(panel, "", drivers, style = wx.CB_SORT)
         hbox_details.Add(self.your_name, proportion = 1)
         vbox.Add(hbox_details, flag = wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, border = 10)
 
         vbox.Add((-1, 20))
 
         hbox_messages = wx.BoxSizer(wx.HORIZONTAL)
-        self.messages_text = wx.StaticText(panel, label = 'Enter your name above, and click start')
+        self.messages_text = wx.StaticText(panel, label = 'Choose or enter the driver name above, and click start')
         hbox_messages.Add(self.messages_text)
         vbox.Add(hbox_messages, flag = wx.ALIGN_CENTER_HORIZONTAL)
 
@@ -76,6 +79,16 @@ class RLCGui(wx.Frame):
             if hasattr(self, 'thread'):
                 self.thread.close()
             self.Destroy()
+
+    def get_drivers(self):
+        try:
+            req = requests.get('https://racingleaguecharts.com/drivers.json', verify = False)
+            if req.status_code == 200:
+                return req.json()
+            else:
+                raise requests.exceptions.RequestException
+        except requests.exceptions.RequestException:
+            return []
 
 if __name__ == '__main__':
 
