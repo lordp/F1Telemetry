@@ -3,16 +3,31 @@
 import struct
 
 class Packet(object):
-    keys = ['time', 'lap_time', 'lap_distance', 'distance', 'speed',
-            'lap_no', 'x', 'y', 'z', 'xv', 'yv', 'zv', 'xr', 'yr', 'zr', 'xd',
-            'yd', 'zd', 'suspensionpositionrearleft',
-            'suspensionpositionrearright', 'suspensionpositionfrontleft',
-            'suspensionpositionfrontright', 'suspensionvelocityrearleft',
-            'suspensionvelocityrearright', 'suspensionvelocityfrontleft',
-            'suspensionvelocityfrontright', 'wheelspeedrearleft',
-            'wheelspeedrearright', 'wheelspeedfrontleft',
-            'wheelspeedfrontright', 'throttle', 'steer', 'brake', 'clutch',
-            'gear', 'lateralg', 'longitudinalg', 'revs']
+    keys = ['time', 'lap_time', 'lap_distance',
+            'distance', 'x', 'y', 'z',
+            'speed', 'world_speed_x', 'world_speed_y', 'world_speed_z',
+            'xr', 'roll', 'zr', 'xd', 'pitch', 'zd',
+            'suspension_position_rear_left',
+            'suspension_position_rear_right',
+            'suspension_position_front_left',
+            'suspension_position_front_right',
+            'suspension_velocity_rear_left',
+            'suspension_velocity_rear_right',
+            'suspension_velocity_front_left',
+            'suspension_velocity_front_right',
+            'wheel_speed_back_left', 'wheel_speed_back_right',
+            'wheel_speed_front_left', 'wheel_speed_front_right',
+            'throttle', 'steer', 'brake', 'clutch', 'gear',
+            'lateral_acceleration', 'longitudinal_acceleration',
+            'lap_no', 'engine_revs', 'new_field1',
+            'race_position', 'kers_remaining', 'kers_recharge', 'drs_status',
+            'difficulty', 'assists', 'fuel_remaining',
+            'session_type', 'new_field10', 'sector', 'time_sector1', 'time_sector2',
+            'brake_temperature_rear_left', 'brake_temperature_rear_right',
+            'brake_temperature_front_left', 'brake_temperature_front_right',
+            'new_field18', 'new_field19', 'new_field20', 'new_field21',
+            'completed_laps_in_race', 'total_laps_in_race', 'track_length', 'previous_lap_time',
+            'new_field_1301', 'new_field_1302', 'new_field_1303']
 
     def __init__(self, data):
         self.data = dict()    
