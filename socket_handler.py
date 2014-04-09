@@ -19,9 +19,12 @@ class SocketThread(threading.Thread):
         self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.socket.bind(('', 20777))
 
+        self.daemon = True
         self.start()
 
     def close(self):
+        print "Done"
+        self.socket.close()
         self.running = False
 
     def run(self):
@@ -40,8 +43,10 @@ class SocketThread(threading.Thread):
 
             #add this packet object to the current session
             self.session.current_lap.add_packet(packet)
+            print self.running
 
         #we've signalled for the recv thread to stop, so do cleanup
+        print "Closing!"
         self.socket.close()
 
 if __name__ == '__main__':

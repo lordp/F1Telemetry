@@ -30,7 +30,7 @@ class Packet(object):
             'new_field_1301', 'new_field_1302', 'new_field_1303']
 
     def __init__(self, data):
-        self.data = dict()    
+        self.data = dict()
         self.decode_raw_packet(data)
 
     def __getattr__(self, name):
@@ -47,7 +47,7 @@ class Packet(object):
         self.data = dict(zip(self.keys, data))
 
 class Lap(object):
-    def __init__(self, session):  
+    def __init__(self, session):
         self.session = session
         self.packets = list()
         self.lap_time = 0
@@ -79,7 +79,7 @@ class Lap(object):
     def finish_lap(self):
         self.lap_time = self.packets[-1].lap_time
         self.lap_number = self.packets[-1].lap_no
-        self.sector_3 = self.lap_time - self.sector_2 - self.sector_1)
+        self.sector_3 = self.lap_time - self.sector_2 - self.sector_1
         self.session.new_lap() #this updates current lap to a new lap
 
 class Session(object):
@@ -92,7 +92,7 @@ class Session(object):
         self.laps.append(Lap(self))
         self.current_lap = self.laps[0]
 
-    def new_lap(self):            
+    def new_lap(self):
         #record a fastest lap if we don't already have one
         if not self.fastest_lap:
             self.fastest_lap = self.current_lap

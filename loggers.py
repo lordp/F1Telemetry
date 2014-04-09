@@ -1,15 +1,10 @@
 import datetime
 import math
-import ConfigParser
-import gspread
 import requests
 
 class Logger(object):
-    def __init__(self):
-        #Should also load this from a file...
-        self.config = ConfigParser.ConfigParser()
-        self.config.read('config.ini')
-        self.screen_name = self.config.get("logger", "screen_name")
+    def __init__(self, driver):
+        self.screen_name = driver
 
     def lap(self, lap):
         pass
@@ -20,48 +15,11 @@ class Logger(object):
     def position(self, x, y):
         pass
 
-class LapTest(object):
-    lap_time = 100.324
-
-class GoogleDocs(Logger):
-    def __init__(self):
-        super(GoogleDocs, self).__init__()
-        #TODO: think of a better way of configuring this! Perhaps INI file?
-        self.username = self.config.get("logger", "username")
-        self.password = self.config.get("logger", "password")
-        self.spreadsheet_name = self.config.get("logger", "sheet_name")
-        self.laps_worksheet_name = self.config.get("logger", "laps_worksheet")
-
-        #Now connect to Google Docs
-        #TODO: catch exceptions here and everywhere for that matter...
-        self.google_docs = gspread.login(self.username, self.password)
-        self.spreadsheet = self.google_docs.open(self.spreadsheet_name)
-        self.laps = self.spreadsheet.worksheet(self.laps_worksheet_name)
-        self.column = self._find_my_column(self.laps)
-
-        #read
-        self.row = 4
-
-    def _find_my_column(self, worksheet):
-        row = worksheet.row_values(1)
-        if self.screen_name in row:
-            return row.index(self.screen_name) + 1
-
-        #TODO: there is a race here if there is more than one client
-        column = len(row) + 1
-        self.laps.update_cell(1, column, self.screen_name)
-        return column
-
-    def lap(self, lap):
-        print self.row, lap.lap_time
-
-        self.laps.update_cell(self.row, self.column, lap.lap_time)
-        self.row += 1
-
 class RacingLeagueCharts(Logger):
-    def __init__(self):
-        super(RacingLeagueCharts, self).__init__()
+    def __init__(self, driver, messages_text):
+        super(RacingLeagueCharts, self).__init__(driver)
         self.session_id = 0
+        self.messages = messages_text
         self.session_url = 'https://racingleaguecharts.com/sessions/register'
         self.lap_url = 'https://racingleaguecharts.com/laps'
 
@@ -70,7 +28,7 @@ class RacingLeagueCharts(Logger):
         r = requests.post(self.session_url, data=payload, verify=False)
         if r.status_code == 200:
             self.session_id = r.json()['session_id']
-            print self.session_id
+            self.messages.SetLabel('Session id: {0}'.format(self.session_id))
             return True
         return False
 
@@ -83,10 +41,3 @@ class RacingLeagueCharts(Logger):
         if r.status_code == 200:
             return True
         return False
-
-if __name__ == '__main__':
-    #g=GoogleDocs()
-    r = RacingLeagueCharts()
-    x=LapTest()
-    #g.lap(x)
-    r.lap(x)
