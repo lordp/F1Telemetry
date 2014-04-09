@@ -14,15 +14,27 @@ class RLCGui(wx.Frame):
     def __init__(self, parent, title):
         super(RLCGui, self).__init__(parent,
             title = title,
-            size = (320, 150),
+            size = (350, 140),
             style = wx.CAPTION | wx.SYSTEM_MENU | wx.CLOSE_BOX
         )
 
+        self.custom_port = '20777'
         self.config_path = os.path.join(os.path.expandvars("%userprofile%"),"Documents\\my games\\formulaone2013\\hardwaresettings\\hardware_settings_config.xml")
+        if os.path.isfile(self.config_path):
+            self.config_missing = False
+            tree = etree.parse(self.config_path)
+            self.motion = tree.xpath('motion')[0]
 
-        self.check_config()
+            self.enabled = (self.motion.get('enabled') == 'true' and \
+                self.motion.get('ip') == '127.0.0.1' and \
+                self.motion.get('extradata') == '3')
+
+            self.custom_port = self.motion.get('port')
+        else:
+            self.config_missing = True
+
         self.InitUI()
-        self.update_gui(self.enabled)
+        self.update_gui()
         self.Show()
 
     def InitUI(self):
@@ -40,14 +52,7 @@ class RLCGui(wx.Frame):
         hbox_details.Add(self.your_name, proportion = 1)
         vbox.Add(hbox_details, flag = wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, border = 10)
 
-        vbox.Add((-1, 20))
-
-        hbox_messages = wx.BoxSizer(wx.HORIZONTAL)
-        self.messages_text = wx.StaticText(panel)
-        hbox_messages.Add(self.messages_text)
-        vbox.Add(hbox_messages)
-
-        vbox.Add((-1, 20))
+        vbox.Add((-1, 10))
 
         hbox_buttons = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -62,50 +67,68 @@ class RLCGui(wx.Frame):
         quit_btn = wx.Button(panel, size = (70,30), id = wx.ID_EXIT)
         quit_btn.Bind(wx.EVT_BUTTON, self.quit_app)
         hbox_buttons.Add(quit_btn)
-        vbox.Add(hbox_buttons, flag = wx.ALIGN_BOTTOM|wx.ALIGN_CENTER_HORIZONTAL)
+        vbox.Add(hbox_buttons, flag = wx.ALIGN_CENTER_HORIZONTAL)
+
+        vbox.Add((-1, 10))
+
+        hbox_config = wx.BoxSizer(wx.HORIZONTAL)
+        config_port_label = wx.StaticText(panel, label = 'Custom Port:')
+        hbox_config.Add(config_port_label, flag = wx.RIGHT|wx.TOP, border = 4)
+
+        self.config_port = wx.TextCtrl(panel, 1, self.custom_port)
+        self.config_port.Bind(wx.EVT_KILL_FOCUS, self.update_port)
+        hbox_config.Add(self.config_port)
+
+        vbox.Add(hbox_config, flag = wx.ALIGN_BOTTOM|wx.ALIGN_CENTER_HORIZONTAL)
 
         panel.SetSizer(vbox)
 
-    def load_config(self):
-        tree = etree.parse(self.config_path)
-        return tree.xpath('motion')[0]
-
-    def check_config(self):
-        self.motion = self.load_config()
-        self.enabled = (self.motion.get('enabled') == 'true' and \
-            self.motion.get('ip') == '127.0.0.1' and \
-            self.motion.get('port') == '20777' and \
-            self.motion.get('extradata') == '3')
+        self.status_bar = self.CreateStatusBar()
 
     def toggle_config(self, e):
         if self.enabled:
             self.motion.set('enabled', 'false')
-            self.update_gui(False)
+            self.enabled = False
+            self.update_gui()
         else:
             self.motion.set('enabled', 'true')
             self.motion.set('ip', '127.0.0.1')
-            self.motion.set('port', '20777')
+            self.custom_port = self.config_port.GetValue()
+            if self.custom_port:
+                self.motion.set('port', self.custom_port)
+            else:
+                self.motion.set('port', '20777')
             self.motion.set('extradata', '3')
-            self.update_gui(True)
+            self.enabled = True
+            self.update_gui()
 
+        self.save_config()
+
+    def save_config(self):
         config = open(self.config_path, 'w')
         config.write(etree.tostring(self.motion.getparent(), encoding = 'utf-8', xml_declaration = True))
         config.close()
 
-    def update_gui(self, enabled):
-        if enabled:
-            msg = 'Choose or enter the driver name above, and click start'
-            self.messages_text.SetLabel(msg)
-            self.enable_btn.SetLabel('&Disable')
-            self.start_btn.Enable()
-            self.enabled = True
-        else:
-            msg = 'The telemetry system is not enabled'
-            self.messages_text.SetLabel(msg)
-            self.enable_btn.SetLabel('&Enable')
-            self.start_btn.Disable()
-            self.enabled = False
+    def update_port(self, e):
+        self.custom_port = self.config_port.GetValue()
+        self.motion.set('port', self.custom_port)
+        self.save_config()
 
+    def update_gui(self):
+        if self.config_missing:
+            self.status_bar.SetStatusText('The config file cannot be found')
+            self.enable_btn.SetLabel('&Enable')
+            self.enable_btn.Disable()
+            self.start_btn.Disable()
+        else:
+            if self.enabled:
+                self.status_bar.SetStatusText('Choose or enter the driver name above, and click start')
+                self.enable_btn.SetLabel('&Disable')
+                self.start_btn.Enable()
+            else:
+                self.status_bar.SetStatusText('The telemetry system is not enabled')
+                self.enable_btn.SetLabel('&Enable')
+                self.start_btn.Disable()
 
     def start_logging(self, e):
         if hasattr(self, 'thread'):
