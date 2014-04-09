@@ -59,15 +59,14 @@ class GoogleDocs(Logger):
         self.row += 1
 
 class RacingLeagueCharts(Logger):
-    def __init__(self, driver):
+    def __init__(self):
         super(RacingLeagueCharts, self).__init__()
         self.session_id = 0
-        self.driver = driver
         self.session_url = 'https://racingleaguecharts.com/sessions/register'
         self.lap_url = 'https://racingleaguecharts.com/laps'
 
     def request_session(self, packet):
-        payload = { "driver": self.driver, "track": packet.track_length, "type": packet.session_type }
+        payload = { "driver": self.screen_name, "track": packet.track_length, "type": packet.session_type }
         r = requests.post(self.session_url, data=payload, verify=False)
         if r.status_code == 200:
             self.session_id = r.json()['session_id']
