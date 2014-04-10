@@ -12,84 +12,141 @@ from structures import *
 class RLCGui(wx.Frame):
 
     def __init__(self, parent, title):
-        super(RLCGui, self).__init__(parent,
-            title = title,
-            size = (350, 140),
-            style = wx.CAPTION | wx.SYSTEM_MENU | wx.CLOSE_BOX
-        )
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Racing League Charts Logger", pos = wx.DefaultPosition, size = wx.Size( 240,350 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.SYSTEM_MENU|wx.TAB_TRAVERSAL )
 
         self.logger = None
-        self.custom_port = '20777'
+        self.game_host = '127.0.0.1'
+        self.game_port = '20777'
+
         self.config_path = os.path.join(os.path.expandvars("%userprofile%"),"Documents\\my games\\formulaone2013\\hardwaresettings\\hardware_settings_config.xml")
         if os.path.isfile(self.config_path):
-            self.config_missing = False
+            self.game_config_missing = False
             tree = etree.parse(self.config_path)
             self.motion = tree.xpath('motion')[0]
+            self.enabled = (self.motion.get('enabled') == 'true' and self.motion.get('extradata') == '3')
 
-            self.enabled = (self.motion.get('enabled') == 'true' and \
-                self.motion.get('ip') == '127.0.0.1' and \
-                self.motion.get('extradata') == '3')
-
-            self.custom_port = self.motion.get('port')
+            self.game_port = self.motion.get('port')
+            self.game_host = self.motion.get('host')
         else:
-            self.config_missing = True
+            self.game_config_missing = True
 
         self.InitUI()
-        self.update_gui()
+        self.UpdateUI()
         self.Show()
 
     def InitUI(self):
 
-        panel = wx.Panel(self)
+        self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+        self.SetBackgroundColour( wx.Colour( 255, 255, 255 ) )
 
-        vbox = wx.BoxSizer(wx.VERTICAL)
+        sizer = wx.BoxSizer( wx.VERTICAL )
 
-        hbox_details = wx.BoxSizer(wx.HORIZONTAL)
-        your_name_label = wx.StaticText(panel, label = 'Your name:')
-        hbox_details.Add(your_name_label, flag = wx.RIGHT|wx.TOP, border = 4)
+        general_panel = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+
+        general_sizer = wx.StaticBoxSizer( wx.StaticBox( general_panel, wx.ID_ANY, u"General" ), wx.VERTICAL )
+
+        self.enable_general = wx.CheckBox( general_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0 )
+        general_sizer.Add( self.enable_general, 0, wx.ALL, 5 )
+
+        general_name = wx.BoxSizer( wx.HORIZONTAL )
+
+        self.general_name_label = wx.StaticText( general_panel, wx.ID_ANY, u"Name:", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.general_name_label.Wrap( -1 )
+        general_name.Add( self.general_name_label, 0, wx.ALL, 5 )
 
         drivers = self.get_drivers()
-        self.your_name = PromptingComboBox(panel, "", drivers, style = wx.CB_SORT)
-        hbox_details.Add(self.your_name, proportion = 1)
-        vbox.Add(hbox_details, flag = wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, border = 10)
+        self.general_name_combo = PromptingComboBox(general_panel, "", drivers, style = wx.CB_SORT)
+        general_name.Add( self.general_name_combo, 0, wx.ALL, 5 )
 
-        vbox.Add((-1, 10))
 
-        hbox_buttons = wx.BoxSizer(wx.HORIZONTAL)
+        general_sizer.Add( general_name, 1, 0, 5 )
 
-        self.enable_btn = wx.Button(panel, size = (70, 30))
-        self.enable_btn.Bind(wx.EVT_BUTTON, self.toggle_config)
-        hbox_buttons.Add(self.enable_btn)
+        #general_host = wx.BoxSizer( wx.HORIZONTAL )
 
-        self.start_btn = wx.Button(panel, label = '&Start', size = (70,30))
-        self.start_btn.Bind(wx.EVT_BUTTON, self.start_logging)
-        hbox_buttons.Add(self.start_btn)
+        #self.general_host_label = wx.StaticText( self, wx.ID_ANY, u"Host:", wx.DefaultPosition, wx.DefaultSize, 0 )
+        #self.general_host_label.Wrap( -1 )
+        #general_host.Add( self.general_host_label, 0, wx.ALL, 5 )
 
-        log_btn = wx.Button(panel, size = (75,30), label = 'Show Log')
-        log_btn.Bind(wx.EVT_BUTTON, self.show_log)
-        hbox_buttons.Add(log_btn)
+        #self.general_host_text = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.Point( -1,-1 ), wx.DefaultSize, 0 )
+        #general_host.Add( self.general_host_text, 0, wx.ALL, 5 )
 
-        quit_btn = wx.Button(panel, size = (70,30), id = wx.ID_EXIT)
-        quit_btn.Bind(wx.EVT_BUTTON, self.quit_app)
-        hbox_buttons.Add(quit_btn)
 
-        vbox.Add(hbox_buttons, flag = wx.ALIGN_CENTER_HORIZONTAL)
+        #general_sizer.Add( general_host, 1, wx.EXPAND, 5 )
 
-        vbox.Add((-1, 10))
+        general_port = wx.BoxSizer( wx.HORIZONTAL )
 
-        hbox_config = wx.BoxSizer(wx.HORIZONTAL)
-        config_port_label = wx.StaticText(panel, label = 'Custom Port:')
-        hbox_config.Add(config_port_label, flag = wx.RIGHT|wx.TOP, border = 4)
+        self.general_port_label = wx.StaticText( general_panel, wx.ID_ANY, u"Port:", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.general_port_label.Wrap( -1 )
+        general_port.Add( self.general_port_label, 0, wx.ALL, 5 )
 
-        self.config_port = wx.TextCtrl(panel, 1, self.custom_port)
-        self.config_port.Bind(wx.EVT_KILL_FOCUS, self.update_port)
-        hbox_config.Add(self.config_port)
+        self.general_port_text = wx.TextCtrl( general_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        general_port.Add( self.general_port_text, 0, wx.ALL, 5 )
 
-        vbox.Add(hbox_config, flag = wx.ALIGN_BOTTOM|wx.ALIGN_CENTER_HORIZONTAL)
 
-        panel.SetSizer(vbox)
+        general_sizer.Add( general_port, 1, wx.EXPAND, 5 )
 
-        self.status_bar = self.CreateStatusBar()
+        general_panel.SetSizer(general_sizer)
+        general_panel.Layout()
+        general_sizer.Fit(general_panel)
+
+        sizer.Add( general_panel, 1, wx.ALL|wx.EXPAND, 5 )
+
+        # Forwarding options
+        forwarding_panel = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+
+        forwarding_sizer = wx.StaticBoxSizer( wx.StaticBox( forwarding_panel, wx.ID_ANY, u"Forwarding" ), wx.VERTICAL )
+
+        self.enable_forwarding = wx.CheckBox( forwarding_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0 )
+        forwarding_sizer.Add( self.enable_forwarding, 0, wx.ALL, 5 )
+
+        forwarding_host = wx.BoxSizer( wx.HORIZONTAL )
+
+        self.forwarding_host_label = wx.StaticText( forwarding_panel, wx.ID_ANY, u"Host:", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.forwarding_host_label.Wrap( -1 )
+        forwarding_host.Add( self.forwarding_host_label, 0, wx.ALL, 5 )
+
+        self.forwarding_host_text = wx.TextCtrl( forwarding_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        forwarding_host.Add( self.forwarding_host_text, 0, wx.ALL, 5 )
+
+
+        forwarding_sizer.Add( forwarding_host, 1, wx.EXPAND, 5 )
+
+        forwarding_port = wx.BoxSizer( wx.HORIZONTAL )
+
+        self.forwarding_port_label = wx.StaticText( forwarding_panel, wx.ID_ANY, u"Port:", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.forwarding_port_label.Wrap( -1 )
+        forwarding_port.Add( self.forwarding_port_label, 0, wx.ALL, 5 )
+
+        self.forwarding_port_text = wx.TextCtrl( forwarding_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        forwarding_port.Add( self.forwarding_port_text, 0, wx.ALL, 5 )
+
+
+        forwarding_sizer.Add( forwarding_port, 1, wx.EXPAND, 5 )
+
+        forwarding_panel.SetSizer(forwarding_sizer)
+        forwarding_panel.Layout()
+        forwarding_sizer.Fit(forwarding_panel)
+
+        sizer.Add( forwarding_panel, 1, wx.ALL|wx.EXPAND, 5 )
+
+        # Buttons
+        buttons = wx.BoxSizer( wx.HORIZONTAL )
+
+        self.log_button = wx.Button( self, wx.ID_ANY, u"Show &Log", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.log_button.Bind(wx.EVT_BUTTON, self.show_log)
+        buttons.Add( self.log_button, 0, wx.ALL, 5 )
+
+        self.start_button = wx.Button( self, wx.ID_ANY, u"&Start", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.start_button.Bind(wx.EVT_BUTTON, self.start_logging)
+        buttons.Add( self.start_button, 0, wx.ALL, 5 )
+
+
+        sizer.Add( buttons, 1, wx.ALIGN_CENTER_HORIZONTAL, 5 )
+
+
+        self.SetSizer( sizer )
+        self.Layout()
+        self.status_bar = self.CreateStatusBar( 1, wx.ST_SIZEGRIP, wx.ID_ANY )
 
     def show_log(self, e):
         log = ShowLogDialog(None)
@@ -106,9 +163,9 @@ class RLCGui(wx.Frame):
         else:
             self.motion.set('enabled', 'true')
             self.motion.set('ip', '127.0.0.1')
-            self.custom_port = self.config_port.GetValue()
-            if self.custom_port:
-                self.motion.set('port', self.custom_port)
+            self.game_port = self.config_port.GetValue()
+            if self.game_port:
+                self.motion.set('port', self.game_port)
             else:
                 self.motion.set('port', '20777')
             self.motion.set('extradata', '3')
@@ -123,39 +180,46 @@ class RLCGui(wx.Frame):
         config.close()
 
     def update_port(self, e):
-        self.custom_port = self.config_port.GetValue()
-        self.motion.set('port', self.custom_port)
+        self.game_port = self.config_port.GetValue()
+        self.motion.set('port', self.game_port)
         self.save_config()
 
-    def update_gui(self):
-        if self.config_missing:
-            self.status_bar.SetStatusText('The config file cannot be found')
-            self.enable_btn.SetLabel('&Enable')
-            self.enable_btn.Disable()
-            self.start_btn.Disable()
+    def UpdateUI(self):
+        if self.game_config_missing:
+            self.status_bar.SetStatusText('The game config file cannot be found')
+            self.enable_general.Disable()
+            self.general_name_combo.Disable()
+            self.general_port_text.Disable()
+            self.general_name_combo.Disable()
+            self.enable_forwarding.Disable()
+            self.forwarding_host_text.Disable()
+            self.forwarding_port_text.Disable()
+            self.start_button.Disable()
         else:
             if self.enabled:
-                self.status_bar.SetStatusText('Choose or enter the driver name above, and click start')
-                self.enable_btn.SetLabel('&Disable')
-                self.start_btn.Enable()
+                self.status_bar.SetStatusText('Ready')
+                self.enable_general.SetValue(True)
+                self.general_port_text.SetValue(self.game_port)
             else:
                 self.status_bar.SetStatusText('The telemetry system is not enabled')
-                self.enable_btn.SetLabel('&Enable')
-                self.start_btn.Disable()
+                self.enable_general.SetValue(False)
 
     def start_logging(self, e):
         if hasattr(self, 'thread'):
             self.thread.close()
-            self.start_btn.SetLabel('&Start')
+            self.start_button.SetLabel('&Start')
         else:
-            name = self.your_name.GetValue()
+            name = self.general_name_combo.GetValue()
+            if not self.enable_general.GetValue():
+                wx.MessageBox('You must check the enable box to use the logger', 'Info', wx.OK | wx.ICON_INFORMATION)
+                return False
             if name == "":
                 wx.MessageBox('You must enter a name to start the logger', 'Info', wx.OK | wx.ICON_INFORMATION)
                 return False
-            self.start_btn.SetLabel('&Stop')
-            self.logger = loggers.RacingLeagueCharts(self.your_name.GetValue(), self.status_bar)
+            self.start_button.SetLabel('&Stop')
+            self.logger = loggers.RacingLeagueCharts(name, self.status_bar)
             session = Session(self.logger)
-            self.thread = SocketThread(session);
+            self.thread = SocketThread(session, self.general_port_text.GetValue(), self.status_bar);
 
     def quit_app(self, e):
         #dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',

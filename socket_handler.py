@@ -8,27 +8,39 @@ import threading
 import loggers
 
 class SocketThread(threading.Thread):
-    def __init__(self, session):
+    def __init__(self, session, port, status_bar, forwarding_host = None, forwarding_port = None):
         threading.Thread.__init__(self)
         self.session = session
+        self.status_bar = status_bar
         self.running = True
         self.has_received_packets = False
+        self.is_forwarding = False
 
         #open socket
         self.socket = socket(AF_INET, SOCK_DGRAM)
         self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.socket.bind(('', 20777))
+        self.socket.bind(('', int(port)))
+
+        if forwarding_host and forwarding_port:
+            self.is_forwarding = True
+            self.forwarding_socket = socket(AF_INET, SOCK_DGRAM)
+            self.forwarding_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+            self.forwarding_socket.connect((forwarding_host, int(forwarding_port)))
 
         self.daemon = True
         self.start()
 
     def close(self):
-        print "Done"
+        self.session.logger.add_log_entry("Closing socket.")
+        self.status_bar.SetStatusText("Ready.")
         self.socket.close()
+        if self.is_forwarding:
+            self.forwarding_socket.close()
         self.running = False
 
     def run(self):
-        print "Waiting"
+        self.session.logger.add_log_entry("Waiting for data...")
+        self.status_bar.SetStatusText("Waiting for data...")
         while self.running:
             #populate a packet object
             #todo, remove calcsize from here and do it in the pkt object
@@ -43,11 +55,15 @@ class SocketThread(threading.Thread):
 
             #add this packet object to the current session
             self.session.current_lap.add_packet(packet)
-            print self.running
+
+            # forward the packet onto another app
+            if self.is_forwarding:
+                self.forwarding_socket.send(raw_packet)
 
         #we've signalled for the recv thread to stop, so do cleanup
-        print "Closing!"
         self.socket.close()
+        if self.is_forwarding:
+            self.forwarding_socket.close()
 
 if __name__ == '__main__':
     #Threading probably not required here, but could make adding a GUI later
