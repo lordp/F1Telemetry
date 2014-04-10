@@ -72,15 +72,16 @@ class Lap(object):
         #check if lap has finished, if it hasn't store this packet
         if len(self.packets) > 1 and \
                 packet.lap_time < self.packets[-1].lap_time:
-            self.finish_lap()
+            self.finish_lap(packet)
             return False
         self.packets.append(packet)
         return True
 
-    def finish_lap(self):
-        self.lap_time = self.packets[-1].lap_time
+    def finish_lap(self, packet):
+        self.lap_time = packet.previous_lap_time#self.packets[-1].lap_time
         self.lap_number = self.packets[-1].lap_no
         self.sector_3 = self.lap_time - self.sector_2 - self.sector_1
+        del self.packets[:]
         self.session.new_lap() #this updates current lap to a new lap
 
 class Session(object):
