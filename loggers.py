@@ -20,6 +20,8 @@ class RacingLeagueCharts(Logger):
         super(RacingLeagueCharts, self).__init__(driver)
         self.session_id = 0
         self.status_bar = status_bar
+        self.log = []
+
         self.session_url = 'https://racingleaguecharts.com/sessions/register'
         self.lap_url = 'https://racingleaguecharts.com/laps'
 
@@ -37,6 +39,7 @@ class RacingLeagueCharts(Logger):
         if r.status_code == 200:
             self.session_id = r.json()['session_id']
             self.update_status()
+            self.log.append("Session id: {0}".format(self.session_id))
             return True
         return False
 
@@ -44,6 +47,12 @@ class RacingLeagueCharts(Logger):
         print sector.sector_number, sector.sector_time
 
     def lap(self, lap):
+        total = self.format_time(lap.lap_time)
+        s1 = self.format_time(lap.sector_1)
+        s2 = self.format_time(lap.sector_2)
+        s3 = self.format_time(lap.lap_time - lap.sector_1 - lap.sector_2)
+
+        self.log.append("Lap: {0:02d} {1} {2} {3} {4}".format(lap.lap_number, total, s1, s2, s3))
         payload = { "session_id": self.session_id, "lap_number": lap.lap_number, "sector_1": lap.sector_1, "sector_2": lap.sector_2, "total": lap.lap_time }
         r = requests.post(self.lap_url, data=payload, verify=False)
         if r.status_code == 200:
