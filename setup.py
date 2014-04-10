@@ -5,6 +5,7 @@ setup(
   options = {
     "py2exe": {
         "dll_excludes": ["MSVCP90.dll", "HID.DLL", "w9xpopen.exe"],
+        'includes': ['lxml.etree', 'lxml._elementpath', 'gzip'],
       }
     },
   windows=['racingleaguecharts.py']
