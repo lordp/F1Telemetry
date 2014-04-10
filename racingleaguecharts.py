@@ -18,10 +18,10 @@ class RLCGui(wx.Frame):
         self.game_host = '127.0.0.1'
         self.game_port = '20777'
 
-        self.config_path = os.path.join(os.path.expandvars("%userprofile%"),"Documents\\my games\\formulaone2013\\hardwaresettings\\hardware_settings_config.xml")
-        if os.path.isfile(self.config_path):
+        self.game_config_path = os.path.join(os.path.expandvars("%userprofile%"),"Documents\\my games\\formulaone2013\\hardwaresettings\\hardware_settings_config.xml")
+        if os.path.isfile(self.game_config_path):
             self.game_config_missing = False
-            tree = etree.parse(self.config_path)
+            tree = etree.parse(self.game_config_path)
             self.motion = tree.xpath('motion')[0]
             self.enabled = (self.motion.get('enabled') == 'true' and self.motion.get('extradata') == '3')
 
@@ -46,7 +46,7 @@ class RLCGui(wx.Frame):
         general_sizer = wx.StaticBoxSizer( wx.StaticBox( general_panel, wx.ID_ANY, u"General" ), wx.VERTICAL )
 
         self.enable_general = wx.CheckBox( general_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.enable_general.Bind(wx.EVT_CHECKBOX, self.toggle_game_config)
+        self.enable_general.Bind(wx.EVT_CHECKBOX, self.save_game_config)
         general_sizer.Add( self.enable_general, 0, wx.ALL, 5 )
 
         general_name = wx.BoxSizer( wx.HORIZONTAL )
@@ -156,7 +156,7 @@ class RLCGui(wx.Frame):
         log.ShowModal()
         log.Destroy()
 
-    def toggle_game_config(self, e):
+    def save_game_config(self, e):
         if e.IsChecked():
             self.motion.set('enabled', 'true')
             self.motion.set('ip', '127.0.0.1')
@@ -173,17 +173,9 @@ class RLCGui(wx.Frame):
             self.enabled = False
             self.UpdateUI()
 
-        self.save_config()
-
-    def save_config(self):
-        config = open(self.config_path, 'w')
+        config = open(self.game_config_path, 'w')
         config.write(etree.tostring(self.motion.getparent(), encoding = 'utf-8', xml_declaration = True))
         config.close()
-
-    def update_port(self, e):
-        self.game_port = self.config_port.GetValue()
-        self.motion.set('port', self.game_port)
-        self.save_config()
 
     def UpdateUI(self):
         if self.game_config_missing:
