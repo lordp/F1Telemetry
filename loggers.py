@@ -1,6 +1,7 @@
 import datetime
 import math
 import requests
+import decimal
 
 class Logger(object):
     def __init__(self, driver):
@@ -34,7 +35,8 @@ class RacingLeagueCharts(Logger):
         self.status_bar.SetStatusText(msg)
 
     def request_session(self, packet):
-        payload = { "driver": self.screen_name, "track": packet.track_length, "type": packet.session_type }
+        track_length = decimal.Decimal(packet.track_length)
+        payload = { "driver": self.screen_name, "track": round(track_length, 3), "type": packet.session_type }
         r = requests.post(self.session_url, data=payload, verify=False)
         if r.status_code == 200:
             self.session_id = r.json()['session_id']
