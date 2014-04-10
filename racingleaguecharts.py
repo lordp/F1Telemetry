@@ -46,6 +46,7 @@ class RLCGui(wx.Frame):
         general_sizer = wx.StaticBoxSizer( wx.StaticBox( general_panel, wx.ID_ANY, u"General" ), wx.VERTICAL )
 
         self.enable_general = wx.CheckBox( general_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.enable_general.Bind(wx.EVT_CHECKBOX, self.toggle_game_config)
         general_sizer.Add( self.enable_general, 0, wx.ALL, 5 )
 
         general_name = wx.BoxSizer( wx.HORIZONTAL )
@@ -155,22 +156,22 @@ class RLCGui(wx.Frame):
         log.ShowModal()
         log.Destroy()
 
-    def toggle_config(self, e):
-        if self.enabled:
-            self.motion.set('enabled', 'false')
-            self.enabled = False
-            self.update_gui()
-        else:
+    def toggle_game_config(self, e):
+        if e.IsChecked():
             self.motion.set('enabled', 'true')
             self.motion.set('ip', '127.0.0.1')
-            self.game_port = self.config_port.GetValue()
+            self.game_port = self.general_port_text.GetValue()
             if self.game_port:
                 self.motion.set('port', self.game_port)
             else:
                 self.motion.set('port', '20777')
             self.motion.set('extradata', '3')
             self.enabled = True
-            self.update_gui()
+            self.UpdateUI()
+        else:
+            self.motion.set('enabled', 'false')
+            self.enabled = False
+            self.UpdateUI()
 
         self.save_config()
 
@@ -196,10 +197,10 @@ class RLCGui(wx.Frame):
             self.forwarding_port_text.Disable()
             self.start_button.Disable()
         else:
+            self.general_port_text.SetValue(self.game_port)
             if self.enabled:
                 self.status_bar.SetStatusText('Ready')
                 self.enable_general.SetValue(True)
-                self.general_port_text.SetValue(self.game_port)
             else:
                 self.status_bar.SetStatusText('The telemetry system is not enabled')
                 self.enable_general.SetValue(False)
