@@ -5,6 +5,7 @@ import wx
 import requests
 from lxml import etree
 import os
+import ConfigParser
 from socket_handler import *
 import loggers
 from structures import *
@@ -29,6 +30,10 @@ class RLCGui(wx.Frame):
             self.game_host = self.motion.get('host')
         else:
             self.game_config_missing = True
+
+        self.app_config_path = 'config.ini'
+        self.app_config = ConfigParser.SafeConfigParser()
+        self.app_config.read(self.app_config_path)
 
         self.InitUI()
         self.UpdateUI()
@@ -57,6 +62,7 @@ class RLCGui(wx.Frame):
 
         drivers = self.get_drivers()
         self.general_name_combo = PromptingComboBox(general_panel, "", drivers, style = wx.CB_SORT)
+        self.general_name_combo.Bind(wx.EVT_KILL_FOCUS, self.save_app_config)
         general_name.Add( self.general_name_combo, 0, wx.ALL, 5 )
 
 
@@ -98,6 +104,7 @@ class RLCGui(wx.Frame):
         forwarding_sizer = wx.StaticBoxSizer( wx.StaticBox( forwarding_panel, wx.ID_ANY, u"Forwarding" ), wx.VERTICAL )
 
         self.enable_forwarding = wx.CheckBox( forwarding_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.enable_forwarding.Bind(wx.EVT_CHECKBOX, self.save_app_config)
         forwarding_sizer.Add( self.enable_forwarding, 0, wx.ALL, 5 )
 
         forwarding_host = wx.BoxSizer( wx.HORIZONTAL )
@@ -107,6 +114,7 @@ class RLCGui(wx.Frame):
         forwarding_host.Add( self.forwarding_host_label, 0, wx.ALL, 5 )
 
         self.forwarding_host_text = wx.TextCtrl( forwarding_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.forwarding_host_text.Bind(wx.EVT_KILL_FOCUS, self.save_app_config)
         forwarding_host.Add( self.forwarding_host_text, 0, wx.ALL, 5 )
 
 
@@ -119,6 +127,7 @@ class RLCGui(wx.Frame):
         forwarding_port.Add( self.forwarding_port_label, 0, wx.ALL, 5 )
 
         self.forwarding_port_text = wx.TextCtrl( forwarding_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.forwarding_port_text.Bind(wx.EVT_KILL_FOCUS, self.save_app_config)
         forwarding_port.Add( self.forwarding_port_text, 0, wx.ALL, 5 )
 
 
@@ -177,6 +186,15 @@ class RLCGui(wx.Frame):
         config.write(etree.tostring(self.motion.getparent(), encoding = 'utf-8', xml_declaration = True))
         config.close()
 
+    def save_app_config(self, e):
+        self.app_config.set('main', 'name', self.general_name_combo.GetValue())
+        self.app_config.set('forwarding', 'forwarding_enabled', str(self.enable_forwarding.GetValue()).lower())
+        self.app_config.set('forwarding', 'forwarding_host', self.forwarding_host_text.GetValue())
+        self.app_config.set('forwarding', 'forwarding_port', self.forwarding_port_text.GetValue())
+        with open(self.app_config_path, 'w') as config:
+            self.app_config.write(config)
+        return True
+
     def UpdateUI(self):
         if self.game_config_missing:
             self.status_bar.SetStatusText('The game config file cannot be found')
@@ -196,6 +214,15 @@ class RLCGui(wx.Frame):
             else:
                 self.status_bar.SetStatusText('The telemetry system is not enabled')
                 self.enable_general.SetValue(False)
+
+            if self.app_config.get('forwarding', 'forwarding_enabled'):
+                self.enable_forwarding.SetValue(True)
+
+            if self.app_config.get('forwarding', 'forwarding_host'):
+                self.forwarding_host_text.SetValue(self.app_config.get('forwarding', 'forwarding_host'))
+
+            if self.app_config.get('forwarding', 'forwarding_port'):
+                self.forwarding_port_text.SetValue(self.app_config.get('forwarding', 'forwarding_port'))
 
     def start_logging(self, e):
         if hasattr(self, 'thread'):
