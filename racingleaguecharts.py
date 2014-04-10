@@ -18,6 +18,7 @@ class RLCGui(wx.Frame):
             style = wx.CAPTION | wx.SYSTEM_MENU | wx.CLOSE_BOX
         )
 
+        self.logger = None
         self.custom_port = '20777'
         self.config_path = os.path.join(os.path.expandvars("%userprofile%"),"Documents\\my games\\formulaone2013\\hardwaresettings\\hardware_settings_config.xml")
         if os.path.isfile(self.config_path):
@@ -64,9 +65,14 @@ class RLCGui(wx.Frame):
         self.start_btn.Bind(wx.EVT_BUTTON, self.start_logging)
         hbox_buttons.Add(self.start_btn)
 
+        log_btn = wx.Button(panel, size = (75,30), label = 'Show Log')
+        log_btn.Bind(wx.EVT_BUTTON, self.show_log)
+        hbox_buttons.Add(log_btn)
+
         quit_btn = wx.Button(panel, size = (70,30), id = wx.ID_EXIT)
         quit_btn.Bind(wx.EVT_BUTTON, self.quit_app)
         hbox_buttons.Add(quit_btn)
+
         vbox.Add(hbox_buttons, flag = wx.ALIGN_CENTER_HORIZONTAL)
 
         vbox.Add((-1, 10))
@@ -84,6 +90,13 @@ class RLCGui(wx.Frame):
         panel.SetSizer(vbox)
 
         self.status_bar = self.CreateStatusBar()
+
+    def show_log(self, e):
+        log = ShowLogDialog(None)
+        if self.logger:
+            log.SetContent(self.logger.log)
+        log.ShowModal()
+        log.Destroy()
 
     def toggle_config(self, e):
         if self.enabled:
@@ -140,8 +153,8 @@ class RLCGui(wx.Frame):
                 wx.MessageBox('You must enter a name to start the logger', 'Info', wx.OK | wx.ICON_INFORMATION)
                 return False
             self.start_btn.SetLabel('&Stop')
-            logger = loggers.RacingLeagueCharts(self.your_name.GetValue(), self.status_bar)
-            session = Session(logger)
+            self.logger = loggers.RacingLeagueCharts(self.your_name.GetValue(), self.status_bar)
+            session = Session(self.logger)
             self.thread = SocketThread(session);
 
     def quit_app(self, e):

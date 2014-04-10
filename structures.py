@@ -142,3 +142,31 @@ class PromptingComboBox(wx.ComboBox):
                 break
         if not found:
             event.Skip()
+
+class ShowLogDialog(wx.Dialog):
+    def __init__(self, *args, **kw):
+        super(ShowLogDialog, self).__init__(*args, **kw)
+
+        self.InitUI()
+        self.SetTitle('Session log')
+
+    def InitUI(self):
+        self.logctrl = wx.TextCtrl(self, style = wx.TE_MULTILINE)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        okButton = wx.Button(self, label='Ok')
+        hbox.Add(okButton)
+
+        vbox.Add(self.logctrl, proportion = 1, flag = wx.ALL | wx.EXPAND, border = 5)
+        vbox.Add(hbox, flag = wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border = 10)
+
+        self.SetSizer(vbox)
+
+        okButton.Bind(wx.EVT_BUTTON, self.OnClose)
+
+    def OnClose(self, e):
+        self.Destroy()
+
+    def SetContent(self, log):
+        self.logctrl.SetValue('\n'.join(log))
