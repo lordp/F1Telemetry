@@ -257,7 +257,7 @@ class RLCGui(wx.Frame):
 
     def get_drivers(self):
         try:
-            req = requests.get('https://racingleaguecharts.com/drivers.json', verify = False)
+            req = requests.get('https://racingleaguecharts.com/drivers.json')
             if req.status_code == 200:
                 return req.json()
             else:
