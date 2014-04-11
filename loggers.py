@@ -38,6 +38,7 @@ class RacingLeagueCharts(Logger):
         self.log.append(msg)
 
     def request_session(self, packet):
+        self.add_log_entry('New session requested')
         track_length = decimal.Decimal(packet.track_length)
         payload = { "driver": self.screen_name, "track": round(track_length, 3), "type": packet.session_type }
         r = requests.post(self.session_url, data=payload, verify=False)
