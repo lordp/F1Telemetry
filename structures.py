@@ -55,7 +55,6 @@ class Lap(object):
         self.lap_number = 0
         self.sector_1 = None
         self.sector_2 = None
-        self.sector_3 = None
 
     def get_closest_packet(self, reference_packet):
         def packet_seperation(packet):
@@ -80,7 +79,6 @@ class Lap(object):
     def finish_lap(self, packet):
         self.lap_time = packet.previous_lap_time#self.packets[-1].lap_time
         self.lap_number = self.packets[-1].lap_no
-        self.sector_3 = self.lap_time - self.sector_2 - self.sector_1
         del self.packets[:]
         self.session.new_lap() #this updates current lap to a new lap
 
