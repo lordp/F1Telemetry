@@ -16,6 +16,9 @@ class SocketThread(threading.Thread):
         self.has_received_packets = False
         self.is_forwarding = False
 
+        self.session_type = None
+        self.track_length = None
+
         #open socket
         self.socket = socket(AF_INET, SOCK_DGRAM)
         self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
@@ -51,6 +54,16 @@ class SocketThread(threading.Thread):
             # request an RLC session if this is the first packet
             if not self.has_received_packets and hasattr(self.session.logger, 'request_session'):
                 self.has_received_packets = True
+                self.session.logger.request_session(packet)
+
+            if self.session_type is None:
+                self.session_type = packet.session_type
+
+            if self.track_length is None:
+                self.track_length = packet.track_length
+
+            # if the session type or track length changes, request a new session
+            if self.session_type != packet.session_type or self.track_length != packet.track_length:
                 self.session.logger.request_session(packet)
 
             #add this packet object to the current session
