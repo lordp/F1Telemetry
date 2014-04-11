@@ -77,11 +77,3 @@ class SocketThread(threading.Thread):
         self.socket.close()
         if self.is_forwarding:
             self.forwarding_socket.close()
-
-if __name__ == '__main__':
-    #Threading probably not required here, but could make adding a GUI later
-    #a bit easier?
-    s = Session(loggers.RacingLeagueCharts())
-    thread = SocketThread(s);
-    while True:
-        pass #todo print out some stuff
