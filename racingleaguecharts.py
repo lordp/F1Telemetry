@@ -187,7 +187,7 @@ class RLCGui(wx.Frame):
         config.close()
 
     def save_app_config(self, e):
-        self.app_config.set('main', 'name', self.general_name_combo.GetValue())
+        self.app_config.set('general', 'name', self.general_name_combo.GetValue())
         self.app_config.set('forwarding', 'forwarding_enabled', str(self.enable_forwarding.GetValue()).lower())
         self.app_config.set('forwarding', 'forwarding_host', self.forwarding_host_text.GetValue())
         self.app_config.set('forwarding', 'forwarding_port', self.forwarding_port_text.GetValue())
@@ -215,7 +215,10 @@ class RLCGui(wx.Frame):
                 self.status_bar.SetStatusText('The telemetry system is not enabled')
                 self.enable_general.SetValue(False)
 
-            if self.app_config.get('forwarding', 'forwarding_enabled'):
+            if self.app_config.get('general', 'name'):
+                self.general_name_combo.SetValue(self.app_config.get('general', 'name'))
+
+            if self.app_config.get('forwarding', 'forwarding_enabled') == 'true':
                 self.enable_forwarding.SetValue(True)
 
             if self.app_config.get('forwarding', 'forwarding_host'):
