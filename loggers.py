@@ -41,7 +41,7 @@ class RacingLeagueCharts(Logger):
         self.add_log_entry('New session requested')
         track_length = decimal.Decimal(packet.track_length)
         payload = { "driver": self.screen_name, "track": round(track_length, 3), "type": packet.session_type }
-        r = requests.post(self.session_url, data=payload, verify=False)
+        r = requests.post(self.session_url, data=payload)
         if r.status_code == 200:
             self.session_id = r.json()['session_id']
             self.update_status()
@@ -60,7 +60,7 @@ class RacingLeagueCharts(Logger):
 
         self.add_log_entry("Lap: {0:02d} {1} {2} {3} {4}".format(int(lap.lap_number), total, s1, s2, s3))
         payload = { "session_id": self.session_id, "lap_number": lap.lap_number, "sector_1": lap.sector_1, "sector_2": lap.sector_2, "total": lap.lap_time }
-        r = requests.post(self.lap_url, data=payload, verify=False)
+        r = requests.post(self.lap_url, data=payload)
         if r.status_code == 200:
             self.update_status(lap.lap_time)
             return True
