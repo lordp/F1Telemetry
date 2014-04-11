@@ -239,7 +239,7 @@ class RLCGui(wx.Frame):
             self.start_button.SetLabel('&Stop')
             self.logger = loggers.RacingLeagueCharts(name, self.status_bar)
             session = Session(self.logger)
-            self.thread = SocketThread(session, self.general_port_text.GetValue(), self.status_bar);
+            self.thread = SocketThread(session, self.general_port_text.GetValue(), self.status_bar, self.forwarding_host_text.GetValue(), self.forwarding_port_text.GetValue());
 
     def quit_app(self, e):
         #dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',
