@@ -27,7 +27,7 @@ class RLCGui(wx.Frame):
             self.enabled = (self.motion.get('enabled') == 'true' and self.motion.get('extradata') == '3')
 
             self.game_port = self.motion.get('port')
-            self.game_host = self.motion.get('host')
+            self.game_host = self.motion.get('ip')
         else:
             self.game_config_missing = True
 
