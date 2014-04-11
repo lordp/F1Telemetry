@@ -53,10 +53,12 @@ class RacingLeagueCharts(Logger):
         print sector.sector_number, sector.sector_time
 
     def lap(self, lap):
+        s1 = lap.sector_1 if lap.sector_1 else 0
+        s2 = lap.sector_2 if lap.sector_2 else 0
+        s3 = self.format_time(lap.lap_time - s1 - s2)
+        s1 = self.format_time(s1)
+        s2 = self.format_time(s2)
         total = self.format_time(lap.lap_time)
-        s1 = self.format_time(lap.sector_1)
-        s2 = self.format_time(lap.sector_2)
-        s3 = self.format_time(lap.lap_time - lap.sector_1 - lap.sector_2)
 
         self.add_log_entry("Lap: {0:02d} {1} {2} {3} {4}".format(int(lap.lap_number), total, s1, s2, s3))
         payload = { "session_id": self.session_id, "lap_number": lap.lap_number, "sector_1": lap.sector_1, "sector_2": lap.sector_2, "total": lap.lap_time }
