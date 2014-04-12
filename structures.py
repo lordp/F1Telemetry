@@ -2,6 +2,8 @@
 
 import struct
 import wx
+from datetime import date
+import os
 
 class Packet(object):
     keys = ['time', 'lap_time', 'lap_distance',
@@ -156,6 +158,8 @@ class ShowLogDialog(wx.Dialog):
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         okButton = wx.Button(self, label='Ok')
         hbox.Add(okButton)
+        saveButton = wx.Button(self, label='Save')
+        hbox.Add(saveButton)
 
         vbox.Add(self.logctrl, proportion = 1, flag = wx.ALL | wx.EXPAND, border = 5)
         vbox.Add(hbox, flag = wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border = 10)
@@ -163,9 +167,25 @@ class ShowLogDialog(wx.Dialog):
         self.SetSizer(vbox)
 
         okButton.Bind(wx.EVT_BUTTON, self.OnClose)
+        saveButton.Bind(wx.EVT_BUTTON, self.save_log)
 
     def OnClose(self, e):
         self.Destroy()
 
     def SetContent(self, log):
         self.logctrl.SetValue('\n'.join(log))
+
+    def save_log(self, e):
+        today = date.today().strftime('%Y-%m-%d')
+        counter = 1
+        while (True):
+            if not os.path.isfile('rcl-log-{0}-{1}.log'.format(today, counter)):
+                break
+            counter += 1
+
+        path = 'rcl-log-{0}-{1}.log'.format(today, counter)
+        fp = file(path, 'w')
+        fp.write(self.logctrl.GetValue())
+        fp.close()
+
+        wx.MessageBox('Log saved to {0}'.format(path), 'Info', wx.OK | wx.ICON_INFORMATION)
