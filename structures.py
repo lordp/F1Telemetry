@@ -152,7 +152,7 @@ class ShowLogDialog(wx.Dialog):
         self.SetTitle('Session log')
 
     def InitUI(self):
-        self.logctrl = wx.TextCtrl(self, style = wx.TE_MULTILINE)
+        self.logctrl = wx.TextCtrl(self, style = wx.TE_MULTILINE|wx.TE_READONLY)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
