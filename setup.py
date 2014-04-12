@@ -8,7 +8,12 @@ setup(
         'includes': ['lxml.etree', 'lxml._elementpath', 'gzip'],
       }
     },
-  windows = ['racingleaguecharts.py'],
+  windows = [
+    {
+      "script": 'racingleaguecharts.py',
+      "icon_resources": [(1, "rlc.ico")]
+    }
+  ],
   data_files = [ ( '', [ 'config.ini' ] ) ],
   zipfile = 'lib\\library.zip'
 )
