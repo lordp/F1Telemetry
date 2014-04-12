@@ -6,6 +6,7 @@ import requests
 from lxml import etree
 import os
 import ConfigParser
+import wmi
 from socket_handler import *
 import loggers
 from structures import *
@@ -30,6 +31,10 @@ class RLCGui(wx.Frame):
             self.game_host = self.motion.get('ip')
         else:
             self.game_config_missing = True
+
+        self.game_running = False
+        processes = wmi.WMI().Win32_Process(name = 'F1_2013.exe')
+        self.game_running = (len(processes) != 0)
 
         self.app_config_path = 'config.ini'
         self.app_config = ConfigParser.SafeConfigParser()
@@ -196,8 +201,11 @@ class RLCGui(wx.Frame):
         return True
 
     def UpdateUI(self):
-        if self.game_config_missing:
-            self.status_bar.SetStatusText('The game config file cannot be found')
+        if self.game_config_missing or self.game_running:
+            if self.game_running:
+                self.status_bar.SetStatusText('The game is already running')
+            else:
+                self.status_bar.SetStatusText('The game config file cannot be found')
             self.enable_general.Disable()
             self.general_name_combo.Disable()
             self.general_port_text.Disable()
