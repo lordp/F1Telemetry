@@ -9,5 +9,6 @@ setup(
       }
     },
   windows = ['racingleaguecharts.py'],
-  data_files = [ ( '', [ 'config.ini' ] ) ]
+  data_files = [ ( '', [ 'config.ini' ] ) ],
+  zipfile = 'lib\\library.zip'
 )
