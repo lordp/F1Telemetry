@@ -11,7 +11,9 @@ setup(
   windows = [
     {
       "script": 'racingleaguecharts.py',
-      "icon_resources": [(1, "rlc.ico")]
+      "icon_resources": [(1, "rlc.ico")],
+      "name": "Racing League Charts Logger",
+      "version": "0.9.1"
     }
   ],
   data_files = [ ( '', [ 'config.ini' ] ) ],
