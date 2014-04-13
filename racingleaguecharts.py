@@ -201,11 +201,9 @@ class RLCGui(wx.Frame):
         return True
 
     def UpdateUI(self):
-        if self.game_config_missing or self.game_running:
-            if self.game_running:
-                self.status_bar.SetStatusText('The game is already running')
-            else:
-                self.status_bar.SetStatusText('The game config file cannot be found')
+        if self.game_config_missing:
+            wx.MessageBox('The game config file cannot be found in the expected place.\n\n{0}'.format(self.game_config_path), 'Info', wx.OK | wx.ICON_INFORMATION)
+            self.status_bar.SetStatusText('The game config file cannot be found')
             self.enable_general.Disable()
             self.general_name_combo.Disable()
             self.general_port_text.Disable()
@@ -214,6 +212,9 @@ class RLCGui(wx.Frame):
             self.forwarding_host_text.Disable()
             self.forwarding_port_text.Disable()
             self.start_button.Disable()
+        elif self.game_running and not self.enabled:
+            self.status_bar.SetStatusText('The game is already running')
+            wx.MessageBox('The game is already running but the telemetry system is not enabled. Please tick the enable box and restart the game.', 'Info', wx.OK | wx.ICON_INFORMATION)
         else:
             self.general_port_text.SetValue(self.game_port)
             if self.enabled:
