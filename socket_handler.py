@@ -14,7 +14,6 @@ class SocketThread(threading.Thread):
         self.status_bar = status_bar
         self.running = True
         self.has_received_packets = False
-        self.is_forwarding = False
 
         self.session_type = None
         self.track_length = None
@@ -25,7 +24,6 @@ class SocketThread(threading.Thread):
         self.socket.bind(('', int(port)))
 
         if forwarding_host and forwarding_port:
-            self.is_forwarding = True
             self.forwarding_socket = socket(AF_INET, SOCK_DGRAM)
             self.forwarding_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
             self.forwarding_socket.connect((forwarding_host, int(forwarding_port)))
@@ -37,7 +35,7 @@ class SocketThread(threading.Thread):
         self.session.logger.add_log_entry("Closing socket.")
         self.status_bar.SetStatusText("Ready.")
         self.socket.close()
-        if self.is_forwarding:
+        if self.forwarding_socket:
             self.forwarding_socket.close()
         self.running = False
 
@@ -72,10 +70,10 @@ class SocketThread(threading.Thread):
             self.session.current_lap.add_packet(packet)
 
             # forward the packet onto another app
-            if self.is_forwarding:
+            if self.forwarding_socket:
                 self.forwarding_socket.send(raw_packet)
 
         #we've signalled for the recv thread to stop, so do cleanup
         self.socket.close()
-        if self.is_forwarding:
+        if self.forwarding_socket:
             self.forwarding_socket.close()
