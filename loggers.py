@@ -53,15 +53,9 @@ class RacingLeagueCharts(Logger):
         print sector.sector_number, sector.sector_time
 
     def lap(self, lap):
-        s1 = lap.sector_1 if lap.sector_1 else 0
-        s2 = lap.sector_2 if lap.sector_2 else 0
-        s3 = self.format_time(lap.lap_time - s1 - s2)
-        s1 = self.format_time(s1)
-        s2 = self.format_time(s2)
-        total = self.format_time(lap.lap_time)
-
-        self.add_log_entry("Lap: {0:02d} {1} {2} {3} {4}".format(int(lap.lap_number), total, s1, s2, s3))
-        payload = { "session_id": self.session_id, "lap_number": lap.lap_number, "sector_1": lap.sector_1, "sector_2": lap.sector_2, "total": lap.lap_time }
+        raw_times, formatted_times = self.format_lap_times(lap)
+        self.add_log_entry("Lap: {0:02d} {1} {2} {3} {4}".format(int(lap.lap_number), formatted_times['total'], formatted_times['s1'], formatted_times['s2'], formatted_times['s3']))
+        payload = { "session_id": self.session_id, "lap_number": lap.lap_number, "sector_1": raw_times['s1'], "sector_2": raw_times['s2'], "sector_3": raw_times['s3'], "total": raw_times['total'] }
         r = requests.post(self.lap_url, data = payload, verify = False)
         if r.status_code == 200:
             self.update_status(lap.lap_time)
@@ -74,3 +68,28 @@ class RacingLeagueCharts(Logger):
             return '{0:.0f}:{1:06.3f}'.format(m, s)
         else:
             return '{0:06.3f}'.format(s)
+
+    def format_lap_times(self, lap):
+        if lap.sector_1:
+            s1 = round(decimal.Decimal(lap.sector_1), 3)
+        else:
+            s1 = 0
+
+        if lap.sector_2:
+            s2 = round(decimal.Decimal(lap.sector_2), 3)
+        else:
+            s2 = 0
+
+        if lap.lap_time:
+            total = round(decimal.Decimal(lap.lap_time), 3)
+            s3 = round(decimal.Decimal(total - s2 - s1), 3)
+        else:
+            total = 0
+            s3 = 0
+
+        fs1 = self.format_time(s1)
+        fs2 = self.format_time(s2)
+        fs3 = self.format_time(s3)
+        fst = self.format_time(total)
+
+        return [{"s1": s1, "s2": s2, "s3": s3, "total": total}, {"s1": fs1, "s2": fs2, "s3": fs3, "total": fst}]
