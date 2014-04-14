@@ -4,6 +4,7 @@ import struct
 import wx
 from datetime import date
 import os
+import decimal
 
 class Packet(object):
     keys = ['time', 'lap_time', 'lap_distance',
@@ -57,6 +58,9 @@ class Lap(object):
         self.lap_number = 0
         self.sector_1 = None
         self.sector_2 = None
+        self.position = 0
+        self.top_speed = 0
+        self.current_fuel = None
 
     def get_closest_packet(self, reference_packet):
         def packet_seperation(packet):
@@ -69,6 +73,12 @@ class Lap(object):
 
         if packet.time_sector2 > 0 and self.sector_2 == None:
             self.sector_2 = packet.time_sector2
+
+        if self.top_speed < packet.speed:
+            self.top_speed = packet.speed
+
+        self.current_fuel = packet.fuel_remaining
+        self.position = packet.race_position
 
         #check if lap has finished, if it hasn't store this packet
         if len(self.packets) > 1 and \
@@ -93,6 +103,8 @@ class Session(object):
         self.laps = list()
         self.laps.append(Lap(self))
         self.current_lap = self.laps[0]
+        self.top_speed = 0
+        self.current_fuel = None
 
     def new_lap(self):
         #record a fastest lap if we don't already have one
@@ -102,6 +114,14 @@ class Session(object):
         #update fastest lap if required
         if self.fastest_lap.lap_time > self.current_lap.lap_time:
             self.fastest_lap = self.current_lap
+
+        if self.top_speed < self.current_lap.top_speed:
+            self.top_speed = self.current_lap.top_speed
+            self.logger.add_log_entry("Top speed set to {0} on lap {1}".format(round(decimal.Decimal(self.top_speed * 3.6), 3), self.current_lap.lap_number))
+
+        if self.current_fuel is None or self.current_fuel > self.current_lap.current_fuel:
+            self.current_fuel = self.current_lap.current_fuel
+            self.logger.add_log_entry("Fuel remaining at the end of lap {0} is {1}".format(self.current_lap.lap_number, round(decimal.Decimal(self.current_fuel), 3)))
 
         #create a new lap
         self.logger.lap(self.current_lap) #todo new thread?

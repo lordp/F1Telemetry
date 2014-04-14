@@ -55,7 +55,10 @@ class RacingLeagueCharts(Logger):
     def lap(self, lap):
         raw_times, formatted_times = self.format_lap_times(lap)
         self.add_log_entry("Lap: {0:02d} {1} {2} {3} {4}".format(int(lap.lap_number), formatted_times['total'], formatted_times['s1'], formatted_times['s2'], formatted_times['s3']))
-        payload = { "session_id": self.session_id, "lap_number": lap.lap_number, "sector_1": raw_times['s1'], "sector_2": raw_times['s2'], "sector_3": raw_times['s3'], "total": raw_times['total'] }
+        payload = {
+            "session_id": self.session_id, "lap_number": lap.lap_number,
+            "sector_1": raw_times['s1'], "sector_2": raw_times['s2'], "sector_3": raw_times['s3'], "total": raw_times['total'],
+            "speed": lap.top_speed, "fuel": lap.current_fuel, "position": lap.position }
         r = requests.post(self.lap_url, data = payload, verify = False)
         if r.status_code == 200:
             self.update_status(lap.lap_time)
