@@ -20,3 +20,4 @@ You may need to install a C++ Redistributable from Microsoft. You can download t
 1. [wxPython](http://wxpython.org)
 2. [python-requests](http://python-requests.org)
 3. [lxml](http://lxml.de/)
+4. [WMI](https://pypi.python.org/pypi/WMI/1.4.9)
