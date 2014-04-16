@@ -17,9 +17,12 @@ You may need to install a C++ Redistributable from Microsoft. You can download t
 
 ## Development Requirements ##
 
+32 bit copy of Python 2.7.6 plus 32 bit versions of the following:
+
 1. [wxPython](http://wxpython.org)
 2. [python-requests](http://python-requests.org)
 3. [lxml](http://lxml.de/)
 4. [WMI](https://pypi.python.org/pypi/WMI/1.4.9)
+5. [PyWin32](http://sourceforge.net/projects/pywin32/)
 
-You'll need to make sure you use the same bitness of these - ie 32 bit or 64 bit for all parts, including Python itself. For the record, I'm using 32 bit.
+Run "racingleaguecharts.py".
