@@ -16,9 +16,31 @@ class RLCGui(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Racing League Charts Logger", pos = wx.DefaultPosition, size = wx.Size( 240,350 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.SYSTEM_MENU|wx.TAB_TRAVERSAL )
 
+        self.version = "0.9.3"
         self.logger = None
         self.game_host = '127.0.0.1'
         self.game_port = '20777'
+
+
+        # Menu bar start
+        menu_file = wx.Menu()
+        menu_file.Append(1, "Exit")
+
+        menu_help = wx.Menu()
+        menu_help.Append(2, "About...")
+        menu_help.Append(3, "Instructions")
+        menu_bar = wx.MenuBar()
+
+        menu_bar.Append(menu_file, "File")
+        menu_bar.Append(menu_help, "Help")
+
+        self.SetMenuBar(menu_bar)
+        
+        self.Bind(wx.EVT_MENU, self.menu_quit, id=1)
+        self.Bind(wx.EVT_MENU, self.menu_about, id=2)
+        self.Bind(wx.EVT_MENU, self.menu_instructions, id=3)
+        # Menu bar end
+
 
         self.game_config_path = os.path.join(os.path.expandvars("%userprofile%"),"Documents\\my games\\formulaone2013\\hardwaresettings\\hardware_settings_config.xml")
         if os.path.isfile(self.game_config_path):
@@ -273,6 +295,21 @@ class RLCGui(wx.Frame):
                 raise requests.exceptions.RequestException
         except requests.exceptions.RequestException:
             return []
+
+
+    # Menu items
+    def menu_about(self, event):
+        wx.MessageBox("Racing League Charts version: " + self.version, 
+                "About Racing League Charts", wx.OK | wx.ICON_INFORMATION, self)
+
+    def menu_quit(self, event):
+        self.Close()
+
+    def menu_instructions(self, event):
+        wx.MessageBox("1: Choose your name from the dropdown list\n2: (Optional) Change the port this app runs on. (Only do this if another app already uses this port)\n3: Press start\nIf you use any other telemetry apps, check the Forwarding enable box and put in that app's port.", 
+                "Instructions", wx.OK | wx.ICON_INFORMATION, self)
+
+
 
 if __name__ == '__main__':
 

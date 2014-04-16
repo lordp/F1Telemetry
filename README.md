@@ -24,5 +24,3 @@ You may need to install a C++ Redistributable from Microsoft. You can download t
 3. [lxml](http://lxml.de/)
 4. [WMI](https://pypi.python.org/pypi/WMI/1.4.9)
 5. [PyWin32](http://sourceforge.net/projects/pywin32/)
-
-Run "racingleaguecharts.py".
