@@ -22,24 +22,37 @@ class RLCGui(wx.Frame):
         self.game_port = '20777'
 
 
-        # Menu bar start
-        menu_file = wx.Menu()
-        menu_file.Append(1, "Exit")
-
-        menu_help = wx.Menu()
-        menu_help.Append(2, "About...")
-        menu_help.Append(3, "Instructions")
+        # Start Menu bar
         menu_bar = wx.MenuBar()
 
-        menu_bar.Append(menu_file, "File")
-        menu_bar.Append(menu_help, "Help")
+        # Start File
+        menu_file = wx.Menu()
+        
+        file_exit = wx.MenuItem(menu_file, 1, "&Exit")
+        menu_file.AppendItem(file_exit)
+        self.Bind(wx.EVT_MENU, self.quit_app, id=1)
+
+        menu_bar.Append(menu_file, "&File")
+        # End File
+
+        # Start Help
+        menu_help = wx.Menu()
+        
+        help_instructions = wx.MenuItem(menu_help, 2, "&Instructions")
+        menu_help.AppendItem(help_instructions)
+        self.Bind(wx.EVT_MENU, self.menu_instructions, id=2)
+
+        menu_help.AppendSeparator()
+        
+        help_about = wx.MenuItem(menu_help, 3, "&About")
+        menu_help.AppendItem(help_about)
+        self.Bind(wx.EVT_MENU, self.menu_about, id=3)
+        
+        menu_bar.Append(menu_help, "&Help")
+        # End Help
 
         self.SetMenuBar(menu_bar)
-        
-        self.Bind(wx.EVT_MENU, self.menu_quit, id=1)
-        self.Bind(wx.EVT_MENU, self.menu_about, id=2)
-        self.Bind(wx.EVT_MENU, self.menu_instructions, id=3)
-        # Menu bar end
+        # End Menu bar
 
 
         self.game_config_path = os.path.join(os.path.expandvars("%userprofile%"),"Documents\\my games\\formulaone2013\\hardwaresettings\\hardware_settings_config.xml")
@@ -298,18 +311,42 @@ class RLCGui(wx.Frame):
 
 
     # Menu items
-    def menu_about(self, event):
-        wx.MessageBox("Racing League Charts version: " + self.version, 
-                "About Racing League Charts", wx.OK | wx.ICON_INFORMATION, self)
+    def menu_about(self, e):
+        description = "An F1 telemetry logging application."
 
-    def menu_quit(self, event):
-        self.Close()
+        info = wx.AboutDialogInfo()
+        info.SetName('Racing League Charts Logger')
+        info.SetVersion(self.version)
+        info.SetWebSite('https://racingleaguecharts.com')
+        info.SetDescription(description)
+        
+        #info.SetIcon(wx.Icon('logo', wx.BITMAP_TYPE_PNG))
+        #info.SetCopyright('')
+        #info.SetLicence(licence)
+        #info.AddDeveloper('Lordp')
+        
+        wx.AboutBox(info)
 
-    def menu_instructions(self, event):
-        wx.MessageBox("1: Choose your name from the dropdown list\n2: (Optional) Change the port this app runs on. (Only do this if another app already uses this port)\n3: Press start\nIf you use any other telemetry apps, check the Forwarding enable box and put in that app's port.", 
-                "Instructions", wx.OK | wx.ICON_INFORMATION, self)
+    def menu_instructions(self, e):
+        frame = wx.Frame( self )
+        frame.SetSize( (500,125) )
+        frame.SetTitle( "Instructions" )
+        
+        panel = wx.Panel( frame )
+        vsizer = wx.BoxSizer( wx.VERTICAL )
+        hsizer = wx.BoxSizer( wx.HORIZONTAL )
 
+        text = ("1: Choose your name from the dropdown list\n"
+                "2: (Optional) Change the port this app runs on. (Only do this if another app already uses this port)\n"
+                "3: Press start and run the game\n"
+                "4. Keep note of the session ID for the race and forward it to Lordp\n")
 
+        static_text = wx.StaticText(panel, label=text, style=wx.ALIGN_LEFT)
+        hsizer.Add(static_text, flag=wx.EXPAND|wx.ALL, border=5)
+        vsizer.Add(hsizer, flag=wx.EXPAND|wx.ALL, border=0)
+        panel.SetSizer(vsizer)
+
+        frame.Show()
 
 if __name__ == '__main__':
 
