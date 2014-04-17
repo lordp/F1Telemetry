@@ -19,6 +19,8 @@ class RLCGui(wx.Frame):
         self.logger = None
         self.thread = None
 
+        self.local_mode = False
+
         self.game_host = '127.0.0.1'
         self.game_port = '20777'
 
@@ -57,9 +59,16 @@ class RLCGui(wx.Frame):
 
         general_sizer = wx.StaticBoxSizer( wx.StaticBox( general_panel, wx.ID_ANY, u"General" ), wx.VERTICAL )
 
+        general_boxes = wx.BoxSizer(wx.HORIZONTAL)
         self.enable_general = wx.CheckBox( general_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0 )
         self.enable_general.Bind(wx.EVT_CHECKBOX, self.save_game_config)
-        general_sizer.Add( self.enable_general, 0, wx.ALL, 5 )
+        general_boxes.Add(self.enable_general, 0, wx.ALL, 0)
+        general_boxes.Add((100,0))
+        self.enable_local = wx.CheckBox( general_panel, wx.ID_ANY, u"Local", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.enable_local.Bind(wx.EVT_CHECKBOX, self.toggle_local)
+        general_boxes.Add(self.enable_local, 0, wx.ALL, 0)
+
+        general_sizer.Add( general_boxes, 0, wx.ALL, 5 )
 
         general_name = wx.BoxSizer( wx.HORIZONTAL )
 
@@ -165,6 +174,10 @@ class RLCGui(wx.Frame):
         self.Layout()
         self.status_bar = self.CreateStatusBar( 1, wx.ST_SIZEGRIP, wx.ID_ANY )
 
+    def toggle_local(self, e):
+        self.local_mode = e.IsChecked()
+        self.save_app_config(e)
+
     def show_log(self, e):
         log = ShowLogDialog(None)
         if self.logger:
@@ -195,6 +208,7 @@ class RLCGui(wx.Frame):
 
     def save_app_config(self, e):
         self.app_config.set('general', 'name', self.general_name_combo.GetValue())
+        self.app_config.set('general', 'local', str(self.local_mode).lower())
         self.app_config.set('forwarding', 'forwarding_enabled', str(self.enable_forwarding.GetValue()).lower())
         self.app_config.set('forwarding', 'forwarding_host', self.forwarding_host_text.GetValue())
         self.app_config.set('forwarding', 'forwarding_port', self.forwarding_port_text.GetValue())
@@ -207,6 +221,7 @@ class RLCGui(wx.Frame):
             wx.MessageBox('The game config file cannot be found in the expected place.\n\n{0}'.format(self.game_config_path), 'Info', wx.OK | wx.ICON_INFORMATION)
             self.status_bar.SetStatusText('The game config file cannot be found')
             self.enable_general.Disable()
+            self.enable_local.Disable()
             self.general_name_combo.Disable()
             self.general_port_text.Disable()
             self.general_name_combo.Disable()
@@ -225,6 +240,9 @@ class RLCGui(wx.Frame):
             else:
                 self.status_bar.SetStatusText('The telemetry system is not enabled')
                 self.enable_general.SetValue(False)
+
+            if self.app_config.get('general', 'local') == 'true':
+                self.enable_local.SetValue(True)
 
             if self.app_config.get('general', 'name'):
                 self.general_name_combo.SetValue(self.app_config.get('general', 'name'))
@@ -252,7 +270,7 @@ class RLCGui(wx.Frame):
                 wx.MessageBox('You must enter a name to start the logger', 'Info', wx.OK | wx.ICON_INFORMATION)
                 return False
             self.start_button.SetLabel('&Stop')
-            self.logger = loggers.RacingLeagueCharts(name, self.status_bar)
+            self.logger = loggers.RacingLeagueCharts(name, self.status_bar, self.local_mode)
             session = Session(self.logger)
             self.thread = SocketThread(session, self.general_port_text.GetValue(), self.status_bar, self.forwarding_host_text.GetValue(), self.forwarding_port_text.GetValue());
 
