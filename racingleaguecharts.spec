@@ -14,4 +14,4 @@ exe = EXE(pyz,
           debug=False,
           strip=None,
           upx=True,
-          console=False , icon='rlc.ico')
+          console=False , version='version_file.txt', icon='rlc.ico')
