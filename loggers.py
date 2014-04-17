@@ -1,5 +1,3 @@
-import datetime
-import math
 import requests
 import decimal
 
@@ -17,11 +15,12 @@ class Logger(object):
         pass
 
 class RacingLeagueCharts(Logger):
-    def __init__(self, driver, status_bar):
+    def __init__(self, driver, status_bar, local_mode):
         super(RacingLeagueCharts, self).__init__(driver)
         self.session_id = 0
         self.status_bar = status_bar
         self.log = []
+        self.local_mode = local_mode
 
         self.session_url = 'https://racingleaguecharts.com/sessions/register'
         self.lap_url = 'https://racingleaguecharts.com/laps'
@@ -38,6 +37,8 @@ class RacingLeagueCharts(Logger):
         self.log.append(msg)
 
     def request_session(self, packet):
+        if self.local_mode:
+            return True
         self.add_log_entry('New session requested')
         track_length = decimal.Decimal(packet.track_length)
         payload = { "driver": self.screen_name, "track": round(track_length, 3), "type": packet.session_type }
@@ -55,6 +56,8 @@ class RacingLeagueCharts(Logger):
     def lap(self, lap):
         raw_times, formatted_times = self.format_lap_times(lap)
         self.add_log_entry("Lap: {0:02d} {1} {2} {3} {4}".format(int(lap.lap_number), formatted_times['total'], formatted_times['s1'], formatted_times['s2'], formatted_times['s3']))
+        if self.local_mode:
+            return True
         payload = {
             "session_id": self.session_id, "lap_number": lap.lap_number,
             "sector_1": raw_times['s1'], "sector_2": raw_times['s2'], "sector_3": raw_times['s3'], "total": raw_times['total'],
