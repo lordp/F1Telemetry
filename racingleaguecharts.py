@@ -8,11 +8,40 @@ import wmi
 from socket_handler import *
 import loggers
 from structures import *
+from wx.lib.embeddedimage import PyEmbeddedImage
+
+rlc_icon = PyEmbeddedImage(
+    "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAABK1J"
+    "REFUWIXNl01vE1cUhh87M4wT27Ed2wHTaWInkRLh0EW8wKgKXbCoUKKKUhZIILHgJ/A7WLBA"
+    "YhGWsGKRbZFYNFKQJWIordEkBEFT20kUW9jjr/HHeNzFuC4udkha2vCu5tw559xnZs69544F"
+    "aHGEsh7l5J8FgPC+EYlEiEajSJLU5bS+vk4sFuPdu3cABINBzp49i67rxGIxkslkz+TDw8NE"
+    "o1FmZ2cBqNVqxGIx4vF4b4BoNMrNmzdxuVxdiR4+fMjr1687AFNTU1y/fp1qtcrOzk5fAJfL"
+    "xcLCAteuXQNAVVVu3brVH8Bms+F2u0kmk6ytrVGpVDqBCwsLTExMsLa2hiiKOJ1ORFFEFMUP"
+    "JvZ4PEQiEcLhMIVCgQcPHgCgaRqKonT5Ch9EA/F4nNu3b7O3twfAhQsXuHHjBoqikEqlej7t"
+    "+/L5fFy8eJEzZ86wtLTEnTt3ADAMg3K5/HGA8fFxzp8/j6qqnYTPnj1DURQKhcJHAQRBwO12"
+    "4/V6aTQa7O7u9vftNRiJRJicnKTZbALw+PFj7t+/j6Io5PN5wuHwRyEOqp4Au7u7JBIJNE0D"
+    "IJfLMT09jWEYJBKJTzZ5X4B4PM7du3fJZDIAzM/Pc/nyZRRFIZvN/vcAuVyOzc3Nzrebm5tD"
+    "lmWKxSI2m63j5/P5mJ+fx+PxAJDP51lfX6dQKPD06VN0XWdkZIRLly4BUK/X2djYYHNzc3+A"
+    "gyoYDHL16lWKxSIAGxsb3Lt3j9XVVZaXl3n58iWLi4tcuXIFgFKpxNLSUn+AN2/e8OjRIxKJ"
+    "BLVarTOeTqdZWVkhmUyiqipWq5UnT56Qy+W6gLLZLNVqlVqtxtbWFpqmcerUKaampjoAf1+G"
+    "Ft7rhoFAAFmWyWazpFIpGo0GYL5qWZapVCqk02lEUUSWZZxOZ1eycrlMKpXq7JiSJCHLMqOj"
+    "owDouk4qlWJnZ6c3wGFlt9vx+/04HA7A3OkymcyB9oo/9a9qwO/3c+7cOYLBIGAu35WVlX8O"
+    "YBs8zqD9JBbLAAC1ahatvI1h1HsGOxwOQqEQp0+f7tgvXrw41EN0AYz45/gy9D0DwiAAe9s/"
+    "kXy7TK36add+XwC7c5zjJ7/hmGS245qWYTv5Y+e+02LBJwjYLBYAxgSBofZ1Tw1YEIYlrPZ2"
+    "x2y10NU6RumvN3qoGgiJIt/a7ciCGSY5HDiE/imsgyJDs34Gp70AGPUm5ee7VH7NHAxAGLIz"
+    "dCKAtWra4xb42mplxmqe5Eo2G3sDA1T6AUgDSGMuHHMnAGhWGtTTReCAAK7QBKHwIrrVrOpA"
+    "OoW0sQ4Fdb+wQ2lfAHsggDQTxWI3NyTvz885tp3uC3BsAEadEPS2BzxgkXq6HgzgsDoxDD/M"
+    "wXcB01YlWP0Cfvm/ALwOmJkBedK0ky3IGPsDfF7/Bc1mjXpdpdUy24OhFWiWi2CYNVDVNIq6"
+    "jqrrAJQbDUqaRrndjq1NDVXTGTLdUWlRNZrorXo7n06r0ewC6GpGbu9XeP0RrFazclrDGsZI"
+    "CUQDAF9mj/Gt33C0J2y43VTGxmi0DySSoTKiv8LRNA8yJQSet1y8wuyaLd2g+jZP/fdCb4Cj"
+    "0JHXwJED/AHCo/cJTXmxVAAAAABJRU5ErkJggg==")
 
 class RLCGui(wx.Frame):
 
     def __init__(self, parent, title):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Racing League Charts Logger", pos = wx.DefaultPosition, size = wx.Size( 240,350 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.SYSTEM_MENU|wx.TAB_TRAVERSAL )
+
+        self.SetIcon(rlc_icon.GetIcon())
 
         self.logger = None
         self.thread = None
