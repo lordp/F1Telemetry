@@ -1,10 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import wx
 import requests
 from lxml import etree
-import os
 import ConfigParser
 import wmi
 from socket_handler import *
