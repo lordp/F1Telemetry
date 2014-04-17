@@ -17,6 +17,8 @@ class RLCGui(wx.Frame):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Racing League Charts Logger", pos = wx.DefaultPosition, size = wx.Size( 240,350 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.SYSTEM_MENU|wx.TAB_TRAVERSAL )
 
         self.logger = None
+        self.thread = None
+
         self.game_host = '127.0.0.1'
         self.game_port = '20777'
 
@@ -237,9 +239,10 @@ class RLCGui(wx.Frame):
                 self.forwarding_port_text.SetValue(self.app_config.get('forwarding', 'forwarding_port'))
 
     def start_logging(self, e):
-        if hasattr(self, 'thread'):
+        if self.thread is not None:
             self.thread.close()
             self.start_button.SetLabel('&Start')
+            self.thread = None
         else:
             name = self.general_name_combo.GetValue()
             if not self.enable_general.GetValue():
