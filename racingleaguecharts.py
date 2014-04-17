@@ -376,25 +376,29 @@ class RLCGui(wx.Frame):
         wx.AboutBox(info)
 
     def menu_instructions(self, e):
-        frame = wx.Frame( self )
-        frame.SetSize( (500,125) )
-        frame.SetTitle( "Instructions" )
-        
-        panel = wx.Panel( frame )
-        vsizer = wx.BoxSizer( wx.VERTICAL )
-        hsizer = wx.BoxSizer( wx.HORIZONTAL )
+        frame = Instructions(None, -1, 'Instructions')
+        frame.Show(True)
 
-        text = ("1: Choose your name from the dropdown list\n"
-                "2: (Optional) Change the port this app runs on. (Only do this if another app already uses this port)\n"
-                "3: Press start and run the game\n"
-                "4. Keep note of the session ID for the race and forward it to Lordp\n")
+class Instructions(wx.Frame):
+    def __init__(self, parent, id, title):
+        wx.Frame.__init__(self, parent, id, title, ((600,200)), wx.Size(450, 170))
 
-        static_text = wx.StaticText(panel, label=text, style=wx.ALIGN_LEFT)
-        hsizer.Add(static_text, flag=wx.EXPAND|wx.ALL, border=5)
-        vsizer.Add(hsizer, flag=wx.EXPAND|wx.ALL, border=0)
-        panel.SetSizer(vsizer)
+        panel = wx.Panel(self, -1)
 
-        frame.Show()
+        headertext = "Instructions"
+
+        header = wx.StaticText(panel, -1, headertext, (10,15), style=wx.ALIGN_CENTRE)
+        header.SetFont( wx.Font( 14, 70, 90, 92, False, wx.EmptyString ) )
+
+        text = ("1. Choose your name from the dropdown list\n"
+                "2. (Optional) Change the port this app runs on. (Only do this if another app already uses this port)\n"
+                "3. Press start and run the game\n"
+                "4. Keep note of the session ID for the race and forward it to Lordp")
+
+        instructionstext = wx.StaticText(panel, -1, text, (10,50), style=wx.ALIGN_LEFT)
+        instructionstext.SetMinSize( wx.Size( 430,100 ) )
+        instructionstext.SetMaxSize( wx.Size( 430,200 ) )
+        instructionstext.Wrap( -1 )
 
 if __name__ == '__main__':
 
