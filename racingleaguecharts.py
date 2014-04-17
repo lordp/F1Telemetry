@@ -41,6 +41,7 @@ class RLCGui(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Racing League Charts Logger", pos = wx.DefaultPosition, size = wx.Size( 240,350 ), style = wx.CAPTION|wx.CLOSE_BOX|wx.SYSTEM_MENU|wx.TAB_TRAVERSAL )
 
+        self.version = "0.9.3"
         self.SetIcon(rlc_icon.GetIcon())
 
         self.logger = None
@@ -50,6 +51,40 @@ class RLCGui(wx.Frame):
 
         self.game_host = '127.0.0.1'
         self.game_port = '20777'
+
+
+        # Start Menu bar
+        menu_bar = wx.MenuBar()
+
+        # Start File
+        menu_file = wx.Menu()
+        
+        file_exit = wx.MenuItem(menu_file, 1, "&Exit")
+        menu_file.AppendItem(file_exit)
+        self.Bind(wx.EVT_MENU, self.quit_app, id=1)
+
+        menu_bar.Append(menu_file, "&File")
+        # End File
+
+        # Start Help
+        menu_help = wx.Menu()
+        
+        help_instructions = wx.MenuItem(menu_help, 2, "&Instructions")
+        menu_help.AppendItem(help_instructions)
+        self.Bind(wx.EVT_MENU, self.menu_instructions, id=2)
+
+        menu_help.AppendSeparator()
+        
+        help_about = wx.MenuItem(menu_help, 3, "&About")
+        menu_help.AppendItem(help_about)
+        self.Bind(wx.EVT_MENU, self.menu_about, id=3)
+        
+        menu_bar.Append(menu_help, "&Help")
+        # End Help
+
+        self.SetMenuBar(menu_bar)
+        # End Menu bar
+
 
         self.game_config_path = os.path.join(os.path.expandvars("%userprofile%"),"Documents\\my games\\formulaone2013\\hardwaresettings\\hardware_settings_config.xml")
         if os.path.isfile(self.game_config_path):
@@ -321,6 +356,49 @@ class RLCGui(wx.Frame):
                 raise requests.exceptions.RequestException
         except requests.exceptions.RequestException:
             return []
+
+
+    # Menu items
+    def menu_about(self, e):
+        description = "An F1 telemetry logging application."
+
+        info = wx.AboutDialogInfo()
+        info.SetName('Racing League Charts Logger')
+        info.SetVersion(self.version)
+        info.SetWebSite('https://racingleaguecharts.com')
+        info.SetDescription(description)
+        
+        #info.SetIcon(wx.Icon('logo', wx.BITMAP_TYPE_PNG))
+        #info.SetCopyright('')
+        #info.SetLicence(licence)
+        #info.AddDeveloper('Lordp')
+        
+        wx.AboutBox(info)
+
+    def menu_instructions(self, e):
+        frame = Instructions(None, -1, 'Instructions')
+        frame.Show(True)
+
+class Instructions(wx.Frame):
+    def __init__(self, parent, id, title):
+        wx.Frame.__init__(self, parent, id, title, ((600,200)), wx.Size(450, 170))
+
+        panel = wx.Panel(self, -1)
+
+        headertext = "Instructions"
+
+        header = wx.StaticText(panel, -1, headertext, (10,15), style=wx.ALIGN_CENTRE)
+        header.SetFont( wx.Font( 14, 70, 90, 92, False, wx.EmptyString ) )
+
+        text = ("1. Choose your name from the dropdown list\n"
+                "2. (Optional) Change the port this app runs on. (Only do this if another app already uses this port)\n"
+                "3. Press start and run the game\n"
+                "4. Keep note of the session ID for the race and forward it to Lordp")
+
+        instructionstext = wx.StaticText(panel, -1, text, (10,50), style=wx.ALIGN_LEFT)
+        instructionstext.SetMinSize( wx.Size( 430,100 ) )
+        instructionstext.SetMaxSize( wx.Size( 430,200 ) )
+        instructionstext.Wrap( -1 )
 
 if __name__ == '__main__':
 
