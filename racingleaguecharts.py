@@ -36,12 +36,13 @@ rlc_icon = PyEmbeddedImage(
     "CUQDAF9mj/Gt33C0J2y43VTGxmi0DySSoTKiv8LRNA8yJQSet1y8wuyaLd2g+jZP/fdCb4Cj"
     "0JHXwJED/AHCo/cJTXmxVAAAAABJRU5ErkJggg==")
 
+
 class RLCGui(wx.Frame):
 
     def __init__(self, parent, title):
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Racing League Charts Logger",
-                            pos = wx.DefaultPosition, size = wx.Size( 300, 160 ),
-                            style = wx.CAPTION|wx.CLOSE_BOX|wx.SYSTEM_MENU|wx.TAB_TRAVERSAL )
+        wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=title,
+                          pos=wx.DefaultPosition, size=wx.Size(300, 160),
+                          style=wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU | wx.TAB_TRAVERSAL)
 
         self.version = "0.9.3"
         self.SetIcon(rlc_icon.GetIcon())
@@ -67,7 +68,10 @@ class RLCGui(wx.Frame):
         self.config['forwarding_host'] = self.app_config.get('forwarding', 'host')
         self.config['forwarding_port'] = self.app_config.get('forwarding', 'port')
 
-        self.game_config_path = os.path.join(os.path.expandvars("%userprofile%"),"Documents\\my games\\formulaone2013\\hardwaresettings\\hardware_settings_config.xml")
+        self.game_config_path = os.path.join(
+            os.path.expandvars("%userprofile%"), 
+            "Documents\\my games\\formulaone2013\\hardwaresettings\\hardware_settings_config.xml"
+        )
         if os.path.isfile(self.game_config_path):
             tree = etree.parse(self.game_config_path)
             self.motion = tree.xpath('motion')[0]
@@ -78,10 +82,8 @@ class RLCGui(wx.Frame):
         else:
             self.config['game_config_missing'] = True
 
-        processes = wmi.WMI().Win32_Process(name = 'F1_2013.exe')
+        processes = wmi.WMI().Win32_Process(name='F1_2013.exe')
         self.config['game_running'] = (len(processes) != 0)
-
-        self.config['drivers'] = self.get_drivers()
 
         # Start Menu bar
         menu_bar = wx.MenuBar()
@@ -121,57 +123,57 @@ class RLCGui(wx.Frame):
         self.SetMenuBar(menu_bar)
         # End Menu bar
 
-        self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
-        self.SetBackgroundColour( wx.Colour( 255, 255, 255 ) )
+        self.SetSizeHintsSz(wx.DefaultSize, wx.DefaultSize)
+        self.SetBackgroundColour(wx.Colour(255, 255, 255))
 
-        sizer = wx.BoxSizer( wx.VERTICAL )
+        sizer = wx.BoxSizer(wx.VERTICAL)
 
         # Buttons
-        buttons = wx.BoxSizer( wx.HORIZONTAL )
+        buttons = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.settings_button = wx.Button( self, wx.ID_ANY, u"Se&ttings", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.settings_button = wx.Button(self, wx.ID_ANY, u"Se&ttings", wx.DefaultPosition, wx.DefaultSize, 0)
         self.settings_button.Bind(wx.EVT_BUTTON, self.show_settings)
-        buttons.Add( self.settings_button, 0, wx.ALL, 5 )
+        buttons.Add(self.settings_button, 0, wx.ALL, 5)
 
-        self.log_button = wx.Button( self, wx.ID_ANY, u"Show &Log", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.log_button = wx.Button(self, wx.ID_ANY, u"Show &Log", wx.DefaultPosition, wx.DefaultSize, 0)
         self.log_button.Bind(wx.EVT_BUTTON, self.show_log)
-        buttons.Add( self.log_button, 0, wx.ALL, 5 )
+        buttons.Add(self.log_button, 0, wx.ALL, 5)
 
-        self.start_button = wx.Button( self, wx.ID_ANY, u"&Start", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.start_button = wx.Button(self, wx.ID_ANY, u"&Start", wx.DefaultPosition, wx.DefaultSize, 0)
         self.start_button.Bind(wx.EVT_BUTTON, self.start_logging)
         if not self.config['game_enabled']:
             self.start_button.Disable()
-        buttons.Add( self.start_button, 0, wx.ALL, 5 )
+        buttons.Add(self.start_button, 0, wx.ALL, 5)
 
-        sizer.Add( buttons, 1, wx.ALIGN_CENTER_HORIZONTAL, 5 )
+        sizer.Add(buttons, 1, wx.ALIGN_CENTER_HORIZONTAL, 5)
 
         font = wx.Font(18, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
-        self.session_id = wx.StaticText(self, wx.ID_ANY, u"Session:", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.session_id = wx.StaticText(self, wx.ID_ANY, u"Session:", wx.DefaultPosition, wx.DefaultSize, 0)
         self.session_id.SetFont(font)
         sizer.Add(self.session_id, flag=wx.LEFT, border=5)
 
-        self.last_lap = wx.StaticText(self, wx.ID_ANY, u"Last Lap:", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.last_lap = wx.StaticText(self, wx.ID_ANY, u"Last Lap:", wx.DefaultPosition, wx.DefaultSize, 0)
         self.last_lap.SetFont(font)
         sizer.Add(self.last_lap, flag=wx.LEFT, border=5)
 
-        self.SetSizer( sizer )
+        self.SetSizer(sizer)
         self.Layout()
-        self.status_bar = self.CreateStatusBar( 1, wx.ST_SIZEGRIP, wx.ID_ANY )
+        self.status_bar = self.CreateStatusBar(1, wx.ST_SIZEGRIP, wx.ID_ANY)
 
         self.Show()
 
-    def show_settings(self, e):
+    def show_settings(self, event):
         settings = SettingsDialog(None)
-        settings.UpdateUI(self.config)
+        settings.update_ui(self.config)
         result = settings.ShowModal()
         if result == wx.ID_OK:
             self.save_config(settings)
         settings.Destroy()
 
-    def show_log(self, e):
+    def show_log(self, event):
         log = ShowLogDialog(None)
         if self.logger:
-            log.SetContent(self.logger.log)
+            log.set_content(self.logger.log)
         log.ShowModal()
         log.Destroy()
 
@@ -191,7 +193,7 @@ class RLCGui(wx.Frame):
         self.motion.set('port', self.config['game_port'])
 
         config = open(self.game_config_path, 'w')
-        config.write(etree.tostring(self.motion.getparent(), encoding = 'utf-8', xml_declaration = True))
+        config.write(etree.tostring(self.motion.getparent(), encoding='utf-8', xml_declaration=True))
         config.close()
 
         self.app_config.set('general', 'name', self.config['name'])
@@ -205,17 +207,7 @@ class RLCGui(wx.Frame):
 
         return True
 
-    def get_drivers(self):
-        try:
-            req = requests.get('https://racingleaguecharts.com/drivers.json', verify = False)
-            if req.status_code == 200:
-                return req.json()
-            else:
-                raise requests.exceptions.RequestException
-        except requests.exceptions.RequestException:
-            return []
-
-    def start_logging(self, e):
+    def start_logging(self, event):
         if self.thread is not None:
             self.thread.close()
             self.start_button.SetLabel('&Start')
@@ -223,23 +215,26 @@ class RLCGui(wx.Frame):
         else:
             if not self.config['game_enabled']:
                 wx.MessageBox('You must check the enable box to use the logger', 'Info', wx.OK | wx.ICON_INFORMATION)
+                self.show_settings(event)
                 return False
             if self.config['name'] == "":
                 wx.MessageBox('You must enter a name to start the logger', 'Info', wx.OK | wx.ICON_INFORMATION)
+                self.show_settings(event)
                 return False
             self.start_button.SetLabel('&Stop')
             self.logger = loggers.RacingLeagueCharts(self)
             session = Session(self.logger)
-            self.thread = SocketThread(session, self.config['game_port'], self.status_bar, self.config['forwarding_host'], self.config['forwarding_port'])
+            self.thread = SocketThread(session, self.config['game_port'], self.status_bar,
+                                       self.config['forwarding_host'], self.config['forwarding_port']
+            )
 
-    def quit_app(self, e):
+    def quit_app(self, event):
         if self.thread is not None:
             self.thread.close()
         self.Destroy()
 
-
     # Menu items
-    def menu_about(self, e):
+    def menu_about(self, event):
         description = "An F1 telemetry logging application."
 
         info = wx.AboutDialogInfo()
@@ -255,7 +250,7 @@ class RLCGui(wx.Frame):
         
         wx.AboutBox(info)
 
-    def menu_instructions(self, e):
+    def menu_instructions(self, event):
         frame = Instructions(None, -1, 'Instructions')
         frame.Show(True)
 

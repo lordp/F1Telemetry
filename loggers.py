@@ -1,6 +1,7 @@
 import requests
 import decimal
 
+
 class RacingLeagueCharts:
     def __init__(self, parent):
         self.session_id = 0
@@ -18,8 +19,8 @@ class RacingLeagueCharts:
             return True
         self.add_log_entry('New session requested')
         track_length = decimal.Decimal(packet.track_length)
-        payload = { "driver": self.parent.config['name'], "track": round(track_length, 3), "type": packet.session_type }
-        r = requests.post(self.session_url, data = payload, verify = False)
+        payload = {"driver": self.parent.config['name'], "track": round(track_length, 3), "type": packet.session_type}
+        r = requests.post(self.session_url, data=payload, verify=False)
         if r.status_code == 200:
             self.session_id = r.json()['session_id']
             self.parent.session_id.SetLabel('Session: {0}'.format(self.session_id))
@@ -27,25 +28,32 @@ class RacingLeagueCharts:
             return True
         return False
 
-    def send_sector(self, sector):
+    @staticmethod
+    def send_sector(sector):
         print sector.sector_number, sector.sector_time
 
     def lap(self, lap):
         raw_times, formatted_times = self.format_lap_times(lap)
-        self.add_log_entry("Lap: {0:02d} {1} {2} {3} {4}".format(int(lap.lap_number), formatted_times['total'], formatted_times['s1'], formatted_times['s2'], formatted_times['s3']))
+        self.add_log_entry("Lap: {0:02d} {1} {2} {3} {4}".format(
+            int(lap.lap_number), formatted_times['total'],
+            formatted_times['s1'], formatted_times['s2'],
+            formatted_times['s3'])
+        )
         self.parent.last_lap.SetLabel('Last Lap: {0}'.format(formatted_times['total']))
         if self.parent.config['local_enabled']:
             return True
         payload = {
             "session_id": self.session_id, "lap_number": lap.lap_number,
-            "sector_1": raw_times['s1'], "sector_2": raw_times['s2'], "sector_3": raw_times['s3'], "total": raw_times['total'],
-            "speed": lap.top_speed, "fuel": lap.current_fuel, "position": lap.position }
-        r = requests.post(self.lap_url, data = payload, verify = False)
+            "sector_1": raw_times['s1'], "sector_2": raw_times['s2'], "sector_3": raw_times['s3'],
+            "total": raw_times['total'], "speed": lap.top_speed, "fuel": lap.current_fuel, "position": lap.position
+        }
+        r = requests.post(self.lap_url, data=payload, verify=False)
         if r.status_code == 200:
             return True
         return False
 
-    def format_time(self, seconds):
+    @staticmethod
+    def format_time(seconds):
         m, s = divmod(seconds, 60)
         if m > 0:
             return '{0:.0f}:{1:06.3f}'.format(m, s)

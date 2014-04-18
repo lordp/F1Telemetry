@@ -5,6 +5,7 @@ import wx
 from datetime import date
 import os
 import decimal
+import requests
 
 class Packet(object):
     keys = ['time', 'lap_time', 'lap_distance',
@@ -50,6 +51,7 @@ class Packet(object):
         data = list(struct.unpack('f' * len(self.keys), raw_packet))
         self.data = dict(zip(self.keys, data))
 
+
 class Lap(object):
     def __init__(self, session):
         self.session = session
@@ -68,10 +70,10 @@ class Lap(object):
         return sorted(self.packets, key=packet_seperation)[0]
 
     def add_packet(self, packet):
-        if packet.time_sector1 > 0 and self.sector_1 == None:
+        if packet.time_sector1 > 0 and self.sector_1 is None:
             self.sector_1 = packet.time_sector1
 
-        if packet.time_sector2 > 0 and self.sector_2 == None:
+        if packet.time_sector2 > 0 and self.sector_2 is None:
             self.sector_2 = packet.time_sector2
 
         if self.top_speed < packet.speed:
@@ -89,10 +91,11 @@ class Lap(object):
         return True
 
     def finish_lap(self, packet):
-        self.lap_time = packet.previous_lap_time#self.packets[-1].lap_time
+        self.lap_time = packet.previous_lap_time  # self.packets[-1].lap_time
         self.lap_number = self.packets[-1].lap_no
         del self.packets[:]
-        self.session.new_lap() #this updates current lap to a new lap
+        self.session.new_lap()  # this updates current lap to a new lap
+
 
 class Session(object):
     def __init__(self, logger):
@@ -117,98 +120,103 @@ class Session(object):
 
         if self.top_speed < self.current_lap.top_speed:
             self.top_speed = self.current_lap.top_speed
-            self.logger.add_log_entry("Top speed set to {0} on lap {1}".format(round(decimal.Decimal(self.top_speed * 3.6), 3), self.current_lap.lap_number))
+            self.logger.add_log_entry("Top speed set to {0} on lap {1}".format(
+                round(decimal.Decimal(self.top_speed * 3.6), 3), self.current_lap.lap_number)
+            )
 
         if self.current_fuel is None or self.current_fuel > self.current_lap.current_fuel:
             self.current_fuel = self.current_lap.current_fuel
-            self.logger.add_log_entry("Fuel remaining at the end of lap {0} is {1}".format(self.current_lap.lap_number, round(decimal.Decimal(self.current_fuel), 3)))
+            self.logger.add_log_entry("Fuel remaining at the end of lap {0} is {1}".format(
+                self.current_lap.lap_number, round(decimal.Decimal(self.current_fuel), 3))
+            )
 
-        #create a new lap
-        self.logger.lap(self.current_lap) #todo new thread?
+        # create a new lap
+        self.logger.lap(self.current_lap)  # todo new thread?
         new_lap = Lap(self)
         self.current_lap = new_lap
         self.laps.append(new_lap)
 
+
 class PromptingComboBox(wx.ComboBox):
-    def __init__(self, parent, value, choices=[], style=0, **par):
-        wx.ComboBox.__init__(self, parent, wx.ID_ANY, value, style=style|wx.CB_DROPDOWN, choices=choices, **par)
+    def __init__(self, parent, value, choices, style=0, **par):
+        wx.ComboBox.__init__(self, parent, wx.ID_ANY, value, style=style | wx.CB_DROPDOWN, choices=choices, **par)
         self.choices = choices
-        self.Bind(wx.EVT_TEXT, self.EvtText)
-        self.Bind(wx.EVT_CHAR, self.EvtChar)
-        self.Bind(wx.EVT_COMBOBOX, self.EvtCombobox)
-        self.ignoreEvtText = False
+        self.Bind(wx.EVT_TEXT, self.event_text)
+        self.Bind(wx.EVT_CHAR, self.event_char)
+        self.Bind(wx.EVT_COMBOBOX, self.event_combo_box)
+        self.ignore_event_text = False
 
-    def EvtCombobox(self, event):
-        self.ignoreEvtText = True
+    def event_combo_box(self, event):
+        self.ignore_event_text = True
         event.Skip()
 
-    def EvtChar(self, event):
+    def event_char(self, event):
         if event.GetKeyCode() == 8:
-            self.ignoreEvtText = True
+            self.ignore_event_text = True
         event.Skip()
 
-    def EvtText(self, event):
-        if self.ignoreEvtText:
-            self.ignoreEvtText = False
+    def event_text(self, event):
+        if self.ignore_event_text:
+            self.ignore_event_text = False
             return
-        currentText = event.GetString()
+        current_text = event.GetString()
         found = False
         for choice in self.choices:
-            if choice.lower().startswith(currentText.lower()):
-                self.ignoreEvtText = True
+            if choice.lower().startswith(current_text.lower()):
+                self.ignore_event_text = True
                 self.SetValue(choice)
-                self.SetInsertionPoint(len(currentText))
-                self.SetMark(len(currentText), len(choice))
+                self.SetInsertionPoint(len(current_text))
+                self.SetMark(len(current_text), len(choice))
                 found = True
                 break
         if not found:
             event.Skip()
 
+
 class ShowLogDialog(wx.Dialog):
     def __init__(self, *args, **kw):
         super(ShowLogDialog, self).__init__(*args, **kw)
 
-        self.InitUI()
         self.SetTitle('Session log')
 
-    def InitUI(self):
-        self.logctrl = wx.TextCtrl(self, style = wx.TE_MULTILINE|wx.TE_READONLY)
+        self.logctrl = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.TE_READONLY)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
-        okButton = wx.Button(self, label='Ok')
-        hbox.Add(okButton)
-        saveButton = wx.Button(self, label='Save')
-        hbox.Add(saveButton)
+        ok_button = wx.Button(self, label='Ok')
+        hbox.Add(ok_button)
+        save_button = wx.Button(self, label='Save')
+        hbox.Add(save_button)
 
-        vbox.Add(self.logctrl, proportion = 1, flag = wx.ALL | wx.EXPAND, border = 5)
-        vbox.Add(hbox, flag = wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border = 10)
+        vbox.Add(self.logctrl, proportion=1, flag=wx.ALL | wx.EXPAND, border=5)
+        vbox.Add(hbox, flag=wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border=10)
 
         self.SetSizer(vbox)
 
-        okButton.Bind(wx.EVT_BUTTON, self.OnClose)
-        saveButton.Bind(wx.EVT_BUTTON, self.save_log)
+        ok_button.Bind(wx.EVT_BUTTON, self.on_close)
+        save_button.Bind(wx.EVT_BUTTON, self.save_log)
 
-    def OnClose(self, e):
+    def on_close(self, event):
         self.Destroy()
 
-    def SetContent(self, log):
+    def set_content(self, log):
         self.logctrl.SetValue('\n'.join(log))
 
-    def save_log(self, e):
+    def save_log(self, event):
         today = date.today().strftime('%Y-%m-%d')
         counter = 1
-        while (True):
-            if not os.path.isfile('rcl-log-{0}-{1}.log'.format(today, counter)):
+        while True:
+            if not os.path.isfile('rlc-log-{0}-{1}.log'.format(today, counter)):
                 break
             counter += 1
 
-        path = 'rcl-log-{0}-{1}.log'.format(today, counter)
+        path = 'rlc-log-{0}-{1}.log'.format(today, counter)
         fp = file(path, 'w')
         fp.write(self.logctrl.GetValue())
         fp.close()
 
         wx.MessageBox('Log saved to {0}'.format(path), 'Info', wx.OK | wx.ICON_INFORMATION)
+
 
 class SettingsDialog(wx.Dialog):
     def __init__(self, *args, **kw):
@@ -216,107 +224,119 @@ class SettingsDialog(wx.Dialog):
 
         self.SetTitle('Settings')
 
-        self.SetBackgroundColour( "white" )
+        self.SetBackgroundColour("white")
         self.SetSize((250, 370))
 
-        sizer = wx.BoxSizer( wx.VERTICAL )
+        sizer = wx.BoxSizer(wx.VERTICAL)
 
-        general_panel = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        general_panel = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
 
-        general_sizer = wx.StaticBoxSizer( wx.StaticBox( general_panel, wx.ID_ANY, u"General" ), wx.VERTICAL )
+        general_sizer = wx.StaticBoxSizer(wx.StaticBox(general_panel, wx.ID_ANY, u"General"), wx.VERTICAL)
 
-        self.enable_general = wx.CheckBox( general_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.enable_general = wx.CheckBox(general_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0)
         general_sizer.Add(self.enable_general, 0, wx.ALL, 0)
 
-        general_name = wx.BoxSizer( wx.HORIZONTAL )
+        general_name = wx.BoxSizer(wx.HORIZONTAL)
 
-        general_name_label = wx.StaticText( general_panel, wx.ID_ANY, u"Name:", wx.DefaultPosition, wx.DefaultSize, 0 )
-        general_name_label.Wrap( -1 )
-        general_name.Add( general_name_label, 0, wx.ALL, 5 )
+        general_name_label = wx.StaticText(general_panel, wx.ID_ANY, u"Name:", wx.DefaultPosition, wx.DefaultSize, 0)
+        general_name_label.Wrap(-1)
+        general_name.Add(general_name_label, 0, wx.ALL, 5)
 
-        self.general_name_combo = PromptingComboBox(general_panel, "", [], style = wx.CB_SORT)
-        general_name.Add( self.general_name_combo, 0, wx.ALL, 5 )
+        self.general_name_combo = PromptingComboBox(general_panel, "", self.get_drivers(), style=wx.CB_SORT)
+        general_name.Add(self.general_name_combo, 0, wx.ALL, 5)
 
-        general_sizer.Add( general_name, 1, 0, 5 )
+        general_sizer.Add(general_name, 1, 0, 5)
 
-        general_port = wx.BoxSizer( wx.HORIZONTAL )
+        general_port = wx.BoxSizer(wx.HORIZONTAL)
 
-        general_port_label = wx.StaticText( general_panel, wx.ID_ANY, u"Port:", wx.DefaultPosition, wx.DefaultSize, 0 )
-        general_port_label.Wrap( -1 )
-        general_port.Add( general_port_label, 0, wx.ALL, 5 )
+        general_port_label = wx.StaticText(general_panel, wx.ID_ANY, u"Port:", wx.DefaultPosition, wx.DefaultSize, 0)
+        general_port_label.Wrap(-1)
+        general_port.Add(general_port_label, 0, wx.ALL, 5)
 
-        self.general_port_text = wx.TextCtrl( general_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-        general_port.Add( self.general_port_text, 0, wx.ALL, 5 )
+        self.general_port_text = wx.TextCtrl(
+            general_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0
+        )
+        general_port.Add(self.general_port_text, 0, wx.ALL, 5)
 
-        general_sizer.Add( general_port, 1, wx.EXPAND, 5 )
+        general_sizer.Add(general_port, 1, wx.EXPAND, 5)
 
         general_panel.SetSizer(general_sizer)
         general_panel.Layout()
         general_sizer.Fit(general_panel)
 
-        sizer.Add( general_panel, 1, wx.ALL|wx.EXPAND, 5 )
+        sizer.Add(general_panel, 1, wx.ALL | wx.EXPAND, 5)
 
         # Local mode options
         local_panel = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
         local_sizer = wx.StaticBoxSizer(wx.StaticBox(local_panel, wx.ID_ANY, u'Local Mode'), wx.VERTICAL)
-        self.enable_local_mode = wx.CheckBox( local_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0 )
-        local_sizer.Add( self.enable_local_mode, 0, wx.ALL, 5 )
+        self.enable_local_mode = wx.CheckBox(local_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0)
+        local_sizer.Add(self.enable_local_mode, 0, wx.ALL, 5)
         local_panel.SetSizer(local_sizer)
         local_panel.Layout()
         local_sizer.Fit(local_panel)
 
-        sizer.Add( local_panel, 1, wx.ALL|wx.EXPAND, 5 )
+        sizer.Add(local_panel, 1, wx.ALL | wx.EXPAND, 5)
 
         # Forwarding options
-        forwarding_panel = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        forwarding_panel = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
 
-        forwarding_sizer = wx.StaticBoxSizer( wx.StaticBox( forwarding_panel, wx.ID_ANY, u"Forwarding" ), wx.VERTICAL )
+        forwarding_sizer = wx.StaticBoxSizer(wx.StaticBox(forwarding_panel, wx.ID_ANY, u"Forwarding"), wx.VERTICAL)
 
-        self.enable_forwarding = wx.CheckBox( forwarding_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0 )
-        forwarding_sizer.Add( self.enable_forwarding, 0, wx.ALL, 5 )
+        self.enable_forwarding = wx.CheckBox(
+            forwarding_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0
+        )
+        forwarding_sizer.Add(self.enable_forwarding, 0, wx.ALL, 5)
 
-        forwarding_host = wx.BoxSizer( wx.HORIZONTAL )
+        forwarding_host = wx.BoxSizer(wx.HORIZONTAL)
 
-        forwarding_host_label = wx.StaticText( forwarding_panel, wx.ID_ANY, u"Host:", wx.DefaultPosition, wx.DefaultSize, 0 )
-        forwarding_host_label.Wrap( -1 )
-        forwarding_host.Add( forwarding_host_label, 0, wx.ALL, 5 )
+        forwarding_host_label = wx.StaticText(
+            forwarding_panel, wx.ID_ANY, u"Host:", wx.DefaultPosition, wx.DefaultSize, 0
+        )
+        forwarding_host_label.Wrap(-1)
+        forwarding_host.Add(forwarding_host_label, 0, wx.ALL, 5)
 
-        self.forwarding_host_text = wx.TextCtrl( forwarding_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-        forwarding_host.Add( self.forwarding_host_text, 0, wx.ALL, 5 )
+        self.forwarding_host_text = wx.TextCtrl(
+            forwarding_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0
+        )
+        forwarding_host.Add(self.forwarding_host_text, 0, wx.ALL, 5)
 
-        forwarding_sizer.Add( forwarding_host, 1, wx.EXPAND, 5 )
+        forwarding_sizer.Add(forwarding_host, 1, wx.EXPAND, 5)
 
-        forwarding_port = wx.BoxSizer( wx.HORIZONTAL )
+        forwarding_port = wx.BoxSizer(wx.HORIZONTAL)
 
-        forwarding_port_label = wx.StaticText( forwarding_panel, wx.ID_ANY, u"Port:", wx.DefaultPosition, wx.DefaultSize, 0 )
-        forwarding_port_label.Wrap( -1 )
-        forwarding_port.Add( forwarding_port_label, 0, wx.ALL, 5 )
+        forwarding_port_label = wx.StaticText(
+            forwarding_panel, wx.ID_ANY, u"Port:", wx.DefaultPosition, wx.DefaultSize, 0
+        )
+        forwarding_port_label.Wrap(-1)
+        forwarding_port.Add(forwarding_port_label, 0, wx.ALL, 5)
 
-        self.forwarding_port_text = wx.TextCtrl( forwarding_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-        forwarding_port.Add( self.forwarding_port_text, 0, wx.ALL, 5 )
+        self.forwarding_port_text = wx.TextCtrl(
+            forwarding_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0
+        )
+        forwarding_port.Add(self.forwarding_port_text, 0, wx.ALL, 5)
 
-        forwarding_sizer.Add( forwarding_port, 1, wx.EXPAND, 5 )
+        forwarding_sizer.Add(forwarding_port, 1, wx.EXPAND, 5)
 
         forwarding_panel.SetSizer(forwarding_sizer)
         forwarding_panel.Layout()
         forwarding_sizer.Fit(forwarding_panel)
 
-        sizer.Add( forwarding_panel, 1, wx.ALL|wx.EXPAND, 5 )
+        sizer.Add(forwarding_panel, 1, wx.ALL | wx.EXPAND, 5)
 
-        buttons = wx.BoxSizer( wx.HORIZONTAL )
+        buttons = wx.BoxSizer(wx.HORIZONTAL)
 
-        save_button = wx.Button( self, wx.ID_OK, u"&Save", wx.DefaultPosition, wx.DefaultSize, 0 )
-        buttons.Add( save_button, 0, wx.ALL, 5 )
+        save_button = wx.Button(self, wx.ID_OK, u"&Save", wx.DefaultPosition, wx.DefaultSize, 0)
+        buttons.Add(save_button, 0, wx.ALL, 5)
 
-        cancel_button = wx.Button( self, wx.ID_CANCEL, u"&Cancel", wx.DefaultPosition, wx.DefaultSize, 0 )
-        buttons.Add( cancel_button, 0, wx.ALL, 5 )
+        cancel_button = wx.Button(self, wx.ID_CANCEL, u"&Cancel", wx.DefaultPosition, wx.DefaultSize, 0)
+        buttons.Add(cancel_button, 0, wx.ALL, 5)
 
-        sizer.Add( buttons, 1, wx.ALIGN_CENTER_HORIZONTAL, 5 )
+        sizer.Add(buttons, 1, wx.ALIGN_CENTER_HORIZONTAL, 5)
 
-        self.SetSizer( sizer )
+        self.SetSizer(sizer)
         self.Layout()
 
-    def UpdateUI(self, config):
+    def update_ui(self, config):
         if config['game_config_missing'] or (config['game_running'] and not config['game_enabled']):
             if config['game_config_missing']:
                 self.enable_general.Disable()
@@ -330,7 +350,6 @@ class SettingsDialog(wx.Dialog):
         else:
             self.enable_general.SetValue(config['game_enabled'])
             self.general_port_text.SetValue(config['game_port'])
-            self.general_name_combo.SetItems(config['drivers'])
             if config['name']:
                 self.general_name_combo.SetValue(config['name'])
 
@@ -342,24 +361,36 @@ class SettingsDialog(wx.Dialog):
 
             return True
 
+    def get_drivers(self):
+        try:
+            req = requests.get('https://racingleaguecharts.com/drivers.json', verify=False)
+            if req.status_code == 200:
+                return req.json()
+            else:
+                raise requests.exceptions.RequestException
+        except requests.exceptions.RequestException:
+            return []
+
+
 
 class Instructions(wx.Frame):
     def __init__(self, parent, id, title):
-        wx.Frame.__init__(self, parent, id, title, ((600,200)), wx.Size(450, 170))
+        wx.Frame.__init__(self, parent, id, title, ((600, 200)), wx.Size(450, 200))
 
         panel = wx.Panel(self, -1)
 
         headertext = "Instructions"
 
-        header = wx.StaticText(panel, -1, headertext, (10,15), style=wx.ALIGN_CENTRE)
-        header.SetFont( wx.Font( 14, 70, 90, 92, False, wx.EmptyString ) )
+        header = wx.StaticText(panel, -1, headertext, (10, 15), style=wx.ALIGN_CENTRE)
+        header.SetFont(wx.Font(14, 70, 90, 92, False, wx.EmptyString))
 
-        text = ("1. Choose your name from the dropdown list\n"
-                "2. (Optional) Change the port this app runs on. (Only do this if another app already uses this port)\n"
-                "3. Press start and run the game\n"
-                "4. Keep note of the session ID for the race and forward it to Lordp")
+        text = ("1. Click the settings button to open the settings window\n"
+                "2. Choose your name from the dropdown list\n"
+                "3. (Optional) Change the port this app runs on. (Only do this if another app already uses this port)\n"
+                "4. Press start and run the game\n"
+                "5. Keep note of the session ID for the race and forward it to your race organiser.")
 
-        instructionstext = wx.StaticText(panel, -1, text, (10,50), style=wx.ALIGN_LEFT)
-        instructionstext.SetMinSize( wx.Size( 430,100 ) )
-        instructionstext.SetMaxSize( wx.Size( 430,200 ) )
-        instructionstext.Wrap( -1 )
+        instructionstext = wx.StaticText(panel, -1, text, (10, 50), style=wx.ALIGN_LEFT)
+        instructionstext.SetMinSize(wx.Size(430, 100))
+        instructionstext.SetMaxSize(wx.Size(430, 200))
+        instructionstext.Wrap(-1)

@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 
-import struct
 from socket import *
 from structures import *
 import threading
 
-import loggers
 
 class SocketThread(threading.Thread):
-    def __init__(self, session, port, status_bar, forwarding_host = None, forwarding_port = None):
+    def __init__(self, session, port, status_bar, forwarding_host=None, forwarding_port=None):
         threading.Thread.__init__(self)
         self.session = session
         self.status_bar = status_bar
