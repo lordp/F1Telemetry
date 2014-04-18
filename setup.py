@@ -17,5 +17,5 @@ setup(
     }
   ],
   data_files = [ ( '', [ 'config.ini' ] ) ],
-  zipfile = 'lib\\library.zip'
+  zipfile = 'lib\\library.zip', requires=['py2exe']
 )

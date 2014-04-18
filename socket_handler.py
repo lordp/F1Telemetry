@@ -33,7 +33,7 @@ class SocketThread(threading.Thread):
         self.session.logger.add_log_entry("Closing socket.")
         self.status_bar.SetStatusText("Ready.")
         self.socket.close()
-        if self.forwarding_socket:
+        if self.forwarding_socket is not None:
             self.forwarding_socket.close()
         self.running = False
 
@@ -68,7 +68,7 @@ class SocketThread(threading.Thread):
             self.session.current_lap.add_packet(packet)
 
             # forward the packet onto another app
-            if self.forwarding_socket:
+            if self.forwarding_socket is not None:
                 self.forwarding_socket.send(raw_packet)
 
         #we've signalled for the recv thread to stop, so do cleanup
