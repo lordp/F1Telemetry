@@ -44,7 +44,7 @@ class RLCGui(wx.Frame):
                           pos=wx.DefaultPosition, size=wx.Size(300, 160),
                           style=wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU | wx.TAB_TRAVERSAL)
 
-        self.version = "0.9.3"
+        self.version = "0.9.4"
         self.SetIcon(rlc_icon.GetIcon())
 
         self.logger = None
