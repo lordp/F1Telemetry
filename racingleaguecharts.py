@@ -190,7 +190,7 @@ class RLCGui(wx.Frame):
         if not self.app_config.has_option('general', 'name'):
             self.app_config.set('general', 'name', '')
 
-        if not self.app_config.has_section('general'):
+        if not self.app_config.has_section('local'):
             self.app_config.add_section('local')
         if not self.app_config.has_option('local', 'enabled'):
             self.app_config.set('local', 'enabled', 'false')
