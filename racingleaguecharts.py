@@ -53,7 +53,11 @@ class RLCGui(wx.Frame):
         self.config = {
             'game_host': '127.0.0.1',
             'game_port': 20777,
+            'name': None,
             'local_enabled': False,
+            'forwarding_enabled': False,
+            'forwarding_host': 'localhost',
+            'forwarding_port': '20776',
             'game_running': False,
             'game_config_missing': False
         }
@@ -62,11 +66,14 @@ class RLCGui(wx.Frame):
         self.app_config = ConfigParser.SafeConfigParser()
         self.app_config.read(self.app_config_path)
 
-        self.config['name'] = self.app_config.get('general', 'name')
-        self.config['local_enabled'] = self.app_config.get('local', 'enabled') == 'true'
-        self.config['forwarding_enabled'] = self.app_config.get('forwarding', 'enabled') == 'true'
-        self.config['forwarding_host'] = self.app_config.get('forwarding', 'host')
-        self.config['forwarding_port'] = self.app_config.get('forwarding', 'port')
+        try:
+            self.config['name'] = self.app_config.get('general', 'name')
+            self.config['local_enabled'] = self.app_config.get('local', 'enabled') == 'true'
+            self.config['forwarding_enabled'] = self.app_config.get('forwarding', 'enabled') == 'true'
+            self.config['forwarding_host'] = self.app_config.get('forwarding', 'host')
+            self.config['forwarding_port'] = self.app_config.get('forwarding', 'port')
+        except ConfigParser.NoSectionError:
+            self.create_app_config()
 
         self.game_config_path = os.path.join(
             os.path.expandvars("%userprofile%"), 
@@ -176,6 +183,29 @@ class RLCGui(wx.Frame):
             log.set_content(self.logger.log)
         log.ShowModal()
         log.Destroy()
+
+    def create_app_config(self):
+        if not self.app_config.has_section('general'):
+            self.app_config.add_section('general')
+        if not self.app_config.has_option('general', 'name'):
+            self.app_config.set('general', 'name', '')
+
+        if not self.app_config.has_section('general'):
+            self.app_config.add_section('local')
+        if not self.app_config.has_option('local', 'enabled'):
+            self.app_config.set('local', 'enabled', 'false')
+
+        if not self.app_config.has_section('forwarding'):
+            self.app_config.add_section('forwarding')
+        if not self.app_config.has_option('forwarding', 'enabled'):
+            self.app_config.set('forwarding', 'enabled', 'false')
+        if not self.app_config.has_option('forwarding', 'host'):
+            self.app_config.set('forwarding', 'host', 'localhost')
+        if not self.app_config.has_option('forwarding', 'port'):
+            self.app_config.set('forwarding', 'port', '20776')
+
+        with open(self.app_config_path, 'w') as config:
+            self.app_config.write(config)
 
     def save_config(self, settings):
         self.config['game_enabled'] = settings.enable_general.IsChecked()
