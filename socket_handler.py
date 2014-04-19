@@ -51,6 +51,8 @@ class SocketThread(threading.Thread):
             if not self.has_received_packets and hasattr(self.session.logger, 'request_session'):
                 self.has_received_packets = True
                 self.session.logger.request_session(packet)
+                self.session.logger.add_log_entry("Data received.")
+                self.status_bar.SetStatusText("Data received.")
 
             if self.session_type is None:
                 self.session_type = packet.session_type
