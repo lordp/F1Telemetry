@@ -192,9 +192,8 @@ class RLCGui(wx.Frame):
         self.motion.set('ip', self.config['game_host'])
         self.motion.set('port', self.config['game_port'])
 
-        config = open(self.game_config_path, 'w')
-        config.write(etree.tostring(self.motion.getparent(), encoding='utf-8', xml_declaration=True))
-        config.close()
+        with open(self.game_config_path, 'w') as config:
+            config.write(etree.tostring(self.motion.getparent(), encoding='utf-8', xml_declaration=True))
 
         self.app_config.set('general', 'name', self.config['name'])
         self.app_config.set('local', 'enabled', str(self.config['local_enabled']).lower())
