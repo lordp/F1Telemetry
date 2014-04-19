@@ -27,7 +27,7 @@ class Packet(object):
             'lap_no', 'engine_revs', 'new_field1',
             'race_position', 'kers_remaining', 'kers_recharge', 'drs_status',
             'difficulty', 'assists', 'fuel_remaining',
-            'session_type', 'new_field10', 'sector', 'time_sector1', 'time_sector2',
+            'session_type', 'on_pit_jacks', 'sector', 'time_sector1', 'time_sector2',
             'brake_temperature_rear_left', 'brake_temperature_rear_right',
             'brake_temperature_front_left', 'brake_temperature_front_right',
             'new_field18', 'new_field19', 'new_field20', 'new_field21',
