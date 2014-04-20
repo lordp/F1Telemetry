@@ -36,6 +36,22 @@ rlc_icon = PyEmbeddedImage(
     "CUQDAF9mj/Gt33C0J2y43VTGxmi0DySSoTKiv8LRNA8yJQSet1y8wuyaLd2g+jZP/fdCb4Cj"
     "0JHXwJED/AHCo/cJTXmxVAAAAABJRU5ErkJggg==")
 
+refresh_png = PyEmbeddedImage(
+    "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA"
+    "CXBIWXMAAA7EAAAOxAGVKw4bAAAAB3RJTUUH3gQUAjIxcTEx0gAAAB1pVFh0Q29tbWVudAAA"
+    "AAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAACYUlEQVQ4y6VSv0vjcBx9bQ0GQVvzbWO+1tIQ"
+    "UCwWLWZTXOqBunRyEQUHl266+yc4F6EddDWgg0UclOIfUFxcRHAVYiSHKFJM47tB6tnjOhz3"
+    "4I0f3q9PhCS+w3Vd3tzc4Pz8HA8PDwiCAJZlYXl5Gfl8/qeu6xoAhGEI13UJ8jdPT085PT1N"
+    "IQSFEEwmk0wmk9Q0jUIIzszM0HEckkS5XOb8/DwjHQflcpmHh4fQNA0fHx+wLAvpdBoA8Pj4"
+    "iNvbW0SjUQRBAE3T4Ps+xsbGAJI4OzujqqpMp9PMZrOs1Wp8enr6cvb8/AzHcbiwsMBMJsNs"
+    "NkvTNDk7O0t4nucUCgVKKWmaJsMw7Ir1ndvb25RS0rIsmqZJ27Y/1QcGBjg4OMhKpcJex1tb"
+    "W4zH49R1nSMjI9R1nePj4+wLggCrq6sYHR3FxsZGBD2QSCSwtrYGRVEAAO12G7lcDpE/Z/xX"
+    "RPGf6KtWq2w0Gujv70fnQRRFwcHBwV/jkMTu7i7v7u5QLBaBubk5plIpSilpGAYTiQRLpVLP"
+    "Mo+PjxmPx6mqKh3HIZaWlpjJZGhZFqWU3NnZ6XncarUwMTFBwzBYKBTo+/6Prw6CIICiKLi4"
+    "uMDR0RHf39+/bLfbbZycnDCfz/Pl5QVvb2/Y29vD8PDwZWRxcZHNZhNTU1O4v79HLBZDq9WC"
+    "bdswDAMA4Hkerq+vEYvF8Pr6ivX1dezv7392VCqVuLm5SZJoNBrM5XIUQjCVSnVRCMHJyUnW"
+    "6/WuiBHXdf2hoSFNVdWOWvPq6squ1+vwPA9hGELXdaysrKBYLEJK2bXOL/9rh7pLs+QHAAAA"
+    "AElFTkSuQmCC")
 
 class RLCGui(wx.Frame):
 
@@ -166,7 +182,7 @@ class RLCGui(wx.Frame):
         self.race_combo = PromptingComboBox(self, u"No Race", self.race_options, style=wx.CB_SORT)
         race_chooser.Add(self.race_combo, 1, wx.ALL, 0)
 
-        refresh_image = wx.Image("refresh.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        refresh_image = refresh_png.GetBitmap()
         refresh_size = (refresh_image.GetWidth() + 10, refresh_image.GetHeight() + 10)
         race_refresh = wx.BitmapButton(self, id=wx.ID_ANY, bitmap=refresh_image, size=refresh_size)
         race_refresh.Bind(wx.EVT_BUTTON, self.refresh_race_list)
