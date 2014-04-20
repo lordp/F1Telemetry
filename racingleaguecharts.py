@@ -41,7 +41,7 @@ class RLCGui(wx.Frame):
 
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=title,
-                          pos=wx.DefaultPosition, size=wx.Size(300, 160),
+                          pos=wx.DefaultPosition, size=wx.Size(300, 200),
                           style=wx.CAPTION | wx.CLOSE_BOX | wx.SYSTEM_MENU | wx.TAB_TRAVERSAL)
 
         self.version = "0.9.5"
@@ -154,6 +154,25 @@ class RLCGui(wx.Frame):
 
         sizer.Add(buttons, 1, wx.ALIGN_CENTER_HORIZONTAL, 5)
 
+        self.race_options = []
+        self.races = self.get_races()
+        for race in self.races:
+            self.race_options.append(race[1])
+        race_chooser = wx.BoxSizer(wx.HORIZONTAL)
+        race_chooser_label = wx.StaticText(self, wx.ID_ANY, u"Race:", wx.DefaultPosition, wx.DefaultSize, 0)
+        race_chooser_label.Wrap(-1)
+        race_chooser.Add(race_chooser_label, 0, wx.ALL, 5)
+
+        self.race_combo = PromptingComboBox(self, u"No Race", self.race_options, style=wx.CB_SORT)
+        race_chooser.Add(self.race_combo, 1, wx.ALL, 0)
+
+        refresh_image = wx.Image("refresh.png", wx.BITMAP_TYPE_ANY).ConvertToBitmap()
+        refresh_size = (refresh_image.GetWidth() + 10, refresh_image.GetHeight() + 10)
+        race_refresh = wx.BitmapButton(self, id=wx.ID_ANY, bitmap=refresh_image, size=refresh_size)
+        race_refresh.Bind(wx.EVT_BUTTON, self.refresh_race_list)
+        race_chooser.Add(race_refresh, 0, wx.LEFT, 5)
+        sizer.Add(race_chooser, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 5)
+
         font = wx.Font(18, wx.DECORATIVE, wx.NORMAL, wx.NORMAL)
         self.session_id = wx.StaticText(self, wx.ID_ANY, u"Session:", wx.DefaultPosition, wx.DefaultSize, 0)
         self.session_id.SetFont(font)
@@ -168,6 +187,26 @@ class RLCGui(wx.Frame):
         self.status_bar = self.CreateStatusBar(1, wx.ST_SIZEGRIP, wx.ID_ANY)
 
         self.Show()
+
+    def refresh_race_list(self, event):
+        self.race_options = []
+        races = self.get_races()
+        for race in races:
+            self.race_options.append(race[1])
+        self.race_combo.SetItems(self.race_options)
+        self.race_combo.SetLabelText(u'No Race')
+        self.status_bar.SetStatusText(u'Race list refreshed.')
+
+    def get_races(self):
+        try:
+            req = requests.get('https://racingleaguecharts.com/races/without_sessions.json', verify=False)
+            if req.status_code == 200:
+                return req.json()
+            else:
+                raise requests.exceptions.RequestException
+        except requests.exceptions.RequestException:
+            return []
+
 
     def show_settings(self, event):
         settings = SettingsDialog(None)
@@ -250,6 +289,12 @@ class RLCGui(wx.Frame):
                 wx.MessageBox('You must enter a name to start the logger', 'Info', wx.OK | wx.ICON_INFORMATION)
                 self.show_settings(event)
                 return False
+
+            try:
+                self.race_id = next(race for race in self.races if race[1] == self.race_combo.GetValue())[0]
+            except:
+                self.race_id = None
+
             self.start_button.SetLabel('&Stop')
             self.logger = loggers.RacingLeagueCharts(self)
             session = Session(self.logger)
