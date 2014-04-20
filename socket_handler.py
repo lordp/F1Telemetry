@@ -75,5 +75,5 @@ class SocketThread(threading.Thread):
 
         #we've signalled for the recv thread to stop, so do cleanup
         self.socket.close()
-        if self.forwarding_socket:
+        if self.forwarding_socket is not None:
             self.forwarding_socket.close()
