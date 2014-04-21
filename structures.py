@@ -225,7 +225,7 @@ class SettingsDialog(wx.Dialog):
         self.SetTitle('Settings')
 
         self.SetBackgroundColour("white")
-        self.SetSize((250, 370))
+        self.SetSize((250, 400))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -235,6 +235,20 @@ class SettingsDialog(wx.Dialog):
 
         self.enable_general = wx.CheckBox(general_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0)
         general_sizer.Add(self.enable_general, 0, wx.ALL, 0)
+
+        general_token = wx.BoxSizer(wx.HORIZONTAL)
+
+        general_token_label = wx.StaticText(
+            general_panel, wx.ID_ANY, u"Auth Token:", wx.DefaultPosition, wx.DefaultSize, 0
+        )
+        general_token.Add(general_token_label, 0, wx.TOP, 9)
+
+        self.general_token_text = wx.TextCtrl(
+            general_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0
+        )
+        general_token.Add(self.general_token_text, 1, wx.ALL, 5)
+
+        general_sizer.Add(general_token, 1, wx.EXPAND, 5)
 
         general_name = wx.BoxSizer(wx.HORIZONTAL)
 
