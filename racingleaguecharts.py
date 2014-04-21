@@ -70,6 +70,7 @@ class RLCGui(wx.Frame):
             'game_host': '127.0.0.1',
             'game_port': 20777,
             'name': None,
+            'token': None,
             'local_enabled': False,
             'forwarding_enabled': False,
             'forwarding_host': 'localhost',
@@ -84,6 +85,7 @@ class RLCGui(wx.Frame):
 
         try:
             self.config['name'] = self.app_config.get('general', 'name')
+            self.config['token'] = self.app_config.get('general', 'token')
             self.config['local_enabled'] = self.app_config.get('local', 'enabled') == 'true'
             self.config['forwarding_enabled'] = self.app_config.get('forwarding', 'enabled') == 'true'
             self.config['forwarding_host'] = self.app_config.get('forwarding', 'host')
@@ -244,6 +246,8 @@ class RLCGui(wx.Frame):
             self.app_config.add_section('general')
         if not self.app_config.has_option('general', 'name'):
             self.app_config.set('general', 'name', '')
+        if not self.app_config.has_option('general', 'token'):
+            self.app_config.set('general', 'token', '')
 
         if not self.app_config.has_section('local'):
             self.app_config.add_section('local')
@@ -266,6 +270,7 @@ class RLCGui(wx.Frame):
         self.config['game_enabled'] = settings.enable_general.IsChecked()
         self.config['game_port'] = settings.general_port_text.GetValue()
         self.config['name'] = settings.general_name_combo.GetValue()
+        self.config['token'] = settings.general_token_text.GetValue()
 
         self.config['local_enabled'] = settings.enable_local_mode.IsChecked()
 
@@ -281,6 +286,7 @@ class RLCGui(wx.Frame):
             config.write(etree.tostring(self.motion.getparent(), encoding='utf-8', xml_declaration=True))
 
         self.app_config.set('general', 'name', self.config['name'])
+        self.app_config.set('general', 'token', self.config['token'])
         self.app_config.set('local', 'enabled', str(self.config['local_enabled']).lower())
         self.app_config.set('forwarding', 'enabled', str(self.config['forwarding_enabled']).lower())
         self.app_config.set('forwarding', 'host', self.config['forwarding_host'])
@@ -301,7 +307,7 @@ class RLCGui(wx.Frame):
                 wx.MessageBox('You must check the enable box to use the logger', 'Info', wx.OK | wx.ICON_INFORMATION)
                 self.show_settings(event)
                 return False
-            if self.config['name'] == "":
+            if self.config['name'] is None:
                 wx.MessageBox('You must enter a name to start the logger', 'Info', wx.OK | wx.ICON_INFORMATION)
                 self.show_settings(event)
                 return False

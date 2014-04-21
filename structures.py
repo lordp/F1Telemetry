@@ -256,7 +256,7 @@ class SettingsDialog(wx.Dialog):
         general_name_label.Wrap(-1)
         general_name.Add(general_name_label, 0, wx.TOP, 9)
 
-        self.general_name_combo = wx.ComboBox(general_panel, wx.ID_ANY, '', choices=self.get_drivers(), style=wx.CB_SORT | wx.CB_READONLY)
+        self.general_name_combo = wx.ComboBox(general_panel, wx.ID_ANY, '', style=wx.CB_SORT | wx.CB_READONLY)
         general_name.Add(self.general_name_combo, 1, wx.ALL, 5)
 
         general_sizer.Add(general_name, 1, wx.EXPAND, 5)
@@ -351,6 +351,7 @@ class SettingsDialog(wx.Dialog):
         if config['game_config_missing'] or (config['game_running'] and not config['game_enabled']):
             if config['game_config_missing']:
                 self.enable_general.Disable()
+            self.general_token_text.Disable()
             self.general_port_text.Disable()
             self.general_name_combo.Disable()
             self.enable_local_mode.Disable()
@@ -361,8 +362,12 @@ class SettingsDialog(wx.Dialog):
         else:
             self.enable_general.SetValue(config['game_enabled'])
             self.general_port_text.SetValue(config['game_port'])
-            if config['name']:
+            self.general_token_text.SetValue(config['token'])
+            self.general_name_combo.SetItems(self.get_drivers())
+            if config['name'] in self.general_name_combo.GetItems():
                 self.general_name_combo.SetValue(config['name'])
+            else:
+                config['name'] = None
 
             self.enable_local_mode.SetValue(config['local_enabled'])
 
@@ -374,7 +379,8 @@ class SettingsDialog(wx.Dialog):
 
     def get_drivers(self):
         try:
-            req = requests.get('https://racingleaguecharts.com/drivers.json', verify=False)
+            token = self.general_token_text.GetValue()
+            req = requests.get('https://racingleaguecharts.com/drivers.json?token={0}'.format(token), verify=False)
             if req.status_code == 200:
                 return req.json()
             else:

@@ -22,7 +22,8 @@ class RacingLeagueCharts:
         payload = {"driver": self.parent.config['name'],
                    "track": round(track_length, 3),
                    "type": packet.session_type,
-                   "race": self.parent.race_id}
+                   "race": self.parent.race_id,
+                   "token": self.parent.config['token']}
         r = requests.post(self.session_url, data=payload, verify=False)
         if r.status_code == 200:
             self.session_id = r.json()['session_id']
