@@ -1,7 +1,7 @@
-F1Telemetry
-===========
+Racing League Charts App
+=
 
-The code here is a basic live timing system for Codemasters F1 2013 racing game, used in conjunction with the Racing League Charts website - https://racingleaguecharts.com
+The code here is a basic live timing system for Codemasters F1 2013 racing game, used in conjunction with the Racing League Charts website - https://racingleaguecharts.com / https://github.com/lordp/RacingLeagueCharts
 
 ## Run Time Requirements ##
 
