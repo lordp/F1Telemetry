@@ -242,8 +242,8 @@ class SettingsDialog(wx.Dialog):
         general_name_label.Wrap(-1)
         general_name.Add(general_name_label, 0, wx.TOP, 9)
 
-        self.general_name_combo = PromptingComboBox(general_panel, "", self.get_drivers(), style=wx.CB_SORT)
-        general_name.Add(self.general_name_combo, 0, wx.ALL, 5)
+        self.general_name_combo = wx.ComboBox(general_panel, wx.ID_ANY, '', choices=self.get_drivers(), style=wx.CB_SORT | wx.CB_READONLY)
+        general_name.Add(self.general_name_combo, 1, wx.ALL, 5)
 
         general_sizer.Add(general_name, 1, wx.EXPAND, 5)
 
