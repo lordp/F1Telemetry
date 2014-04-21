@@ -240,23 +240,22 @@ class SettingsDialog(wx.Dialog):
 
         general_name_label = wx.StaticText(general_panel, wx.ID_ANY, u"Name:", wx.DefaultPosition, wx.DefaultSize, 0)
         general_name_label.Wrap(-1)
-        general_name.Add(general_name_label, 0, wx.ALL, 5)
+        general_name.Add(general_name_label, 0, wx.TOP, 9)
 
         self.general_name_combo = PromptingComboBox(general_panel, "", self.get_drivers(), style=wx.CB_SORT)
         general_name.Add(self.general_name_combo, 0, wx.ALL, 5)
 
-        general_sizer.Add(general_name, 1, 0, 5)
+        general_sizer.Add(general_name, 1, wx.EXPAND, 5)
 
         general_port = wx.BoxSizer(wx.HORIZONTAL)
 
         general_port_label = wx.StaticText(general_panel, wx.ID_ANY, u"Port:", wx.DefaultPosition, wx.DefaultSize, 0)
-        general_port_label.Wrap(-1)
-        general_port.Add(general_port_label, 0, wx.ALL, 5)
+        general_port.Add(general_port_label, 0, wx.TOP, 9)
 
         self.general_port_text = wx.TextCtrl(
             general_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0
         )
-        general_port.Add(self.general_port_text, 0, wx.ALL, 5)
+        general_port.Add(self.general_port_text, 1, wx.ALL, 5)
 
         general_sizer.Add(general_port, 1, wx.EXPAND, 5)
 
@@ -292,13 +291,12 @@ class SettingsDialog(wx.Dialog):
         forwarding_host_label = wx.StaticText(
             forwarding_panel, wx.ID_ANY, u"Host:", wx.DefaultPosition, wx.DefaultSize, 0
         )
-        forwarding_host_label.Wrap(-1)
-        forwarding_host.Add(forwarding_host_label, 0, wx.ALL, 5)
+        forwarding_host.Add(forwarding_host_label, 0, wx.TOP, 9)
 
         self.forwarding_host_text = wx.TextCtrl(
             forwarding_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0
         )
-        forwarding_host.Add(self.forwarding_host_text, 0, wx.ALL, 5)
+        forwarding_host.Add(self.forwarding_host_text, 1, wx.ALL, 5)
 
         forwarding_sizer.Add(forwarding_host, 1, wx.EXPAND, 5)
 
@@ -307,13 +305,12 @@ class SettingsDialog(wx.Dialog):
         forwarding_port_label = wx.StaticText(
             forwarding_panel, wx.ID_ANY, u"Port:", wx.DefaultPosition, wx.DefaultSize, 0
         )
-        forwarding_port_label.Wrap(-1)
-        forwarding_port.Add(forwarding_port_label, 0, wx.ALL, 5)
+        forwarding_port.Add(forwarding_port_label, 0, wx.TOP, 9)
 
         self.forwarding_port_text = wx.TextCtrl(
             forwarding_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0
         )
-        forwarding_port.Add(self.forwarding_port_text, 0, wx.ALL, 5)
+        forwarding_port.Add(self.forwarding_port_text, 1, wx.ALL, 5)
 
         forwarding_sizer.Add(forwarding_port, 1, wx.EXPAND, 5)
 
