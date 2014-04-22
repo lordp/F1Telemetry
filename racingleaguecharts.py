@@ -69,8 +69,8 @@ class RLCGui(wx.Frame):
         self.config = {
             'game_host': '127.0.0.1',
             'game_port': 20777,
-            'name': None,
-            'token': None,
+            'name': '',
+            'token': '',
             'local_enabled': False,
             'forwarding_enabled': False,
             'forwarding_host': 'localhost',
