@@ -111,6 +111,10 @@ class RLCGui(wx.Frame):
         processes = wmi.WMI().Win32_Process(name='F1_2013.exe')
         self.config['game_running'] = (len(processes) != 0)
 
+        if self.config['game_running'] and not self.config['game_enabled']:
+            wx.MessageBox('WARNING: The game is running, but the telemetry system is not enabled. Once you '
+                          'have enabled the telemetry system in the settings, the game will need to be restarted.')
+
         # Start Menu bar
         menu_bar = wx.MenuBar()
 
