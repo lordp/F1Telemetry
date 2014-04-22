@@ -137,42 +137,6 @@ class Session(object):
         self.laps.append(new_lap)
 
 
-class PromptingComboBox(wx.ComboBox):
-    def __init__(self, parent, value, choices, style=0, **par):
-        wx.ComboBox.__init__(self, parent, wx.ID_ANY, value, style=style | wx.CB_DROPDOWN, choices=choices, **par)
-        self.choices = choices
-        self.Bind(wx.EVT_TEXT, self.event_text)
-        self.Bind(wx.EVT_CHAR, self.event_char)
-        self.Bind(wx.EVT_COMBOBOX, self.event_combo_box)
-        self.ignore_event_text = False
-
-    def event_combo_box(self, event):
-        self.ignore_event_text = True
-        event.Skip()
-
-    def event_char(self, event):
-        if event.GetKeyCode() == 8:
-            self.ignore_event_text = True
-        event.Skip()
-
-    def event_text(self, event):
-        if self.ignore_event_text:
-            self.ignore_event_text = False
-            return
-        current_text = event.GetString()
-        found = False
-        for choice in self.choices:
-            if choice.lower().startswith(current_text.lower()):
-                self.ignore_event_text = True
-                self.SetValue(choice)
-                self.SetInsertionPoint(len(current_text))
-                self.SetMark(len(current_text), len(choice))
-                found = True
-                break
-        if not found:
-            event.Skip()
-
-
 class ShowLogDialog(wx.Dialog):
     def __init__(self, *args, **kw):
         super(ShowLogDialog, self).__init__(*args, **kw)

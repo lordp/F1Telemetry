@@ -177,7 +177,7 @@ class RLCGui(wx.Frame):
 
         sizer.Add(buttons, 1, wx.ALIGN_CENTER_HORIZONTAL, 5)
 
-        self.race_options = []
+        self.race_options = [u'No Race']
         self.races = self.get_races()
         for race in self.races:
             self.race_options.append(race[1])
@@ -186,7 +186,7 @@ class RLCGui(wx.Frame):
         race_chooser_label.Wrap(-1)
         race_chooser.Add(race_chooser_label, 0, wx.ALL, 5)
 
-        self.race_combo = PromptingComboBox(self, u"No Race", self.race_options, style=wx.CB_SORT)
+        self.race_combo = wx.ComboBox(self, wx.ID_ANY, u'No Race', choices=self.race_options, style=wx.CB_READONLY)
         race_chooser.Add(self.race_combo, 1, wx.ALL, 0)
 
         refresh_image = refresh_png.GetBitmap()
