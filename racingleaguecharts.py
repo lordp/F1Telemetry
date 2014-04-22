@@ -83,15 +83,16 @@ class RLCGui(wx.Frame):
         self.app_config = ConfigParser.SafeConfigParser()
         self.app_config.read(self.app_config_path)
 
-        try:
-            self.config['name'] = self.app_config.get('general', 'name')
-            self.config['token'] = self.app_config.get('general', 'token')
-            self.config['local_enabled'] = self.app_config.get('local', 'enabled') == 'true'
-            self.config['forwarding_enabled'] = self.app_config.get('forwarding', 'enabled') == 'true'
-            self.config['forwarding_host'] = self.app_config.get('forwarding', 'host')
-            self.config['forwarding_port'] = self.app_config.get('forwarding', 'port')
-        except ConfigParser.NoSectionError:
-            self.create_app_config()
+        # create or update the config file
+        self.create_app_config()
+
+        # set local values based on what is in the config file
+        self.config['name'] = self.app_config.get('general', 'name')
+        self.config['token'] = self.app_config.get('general', 'token')
+        self.config['local_enabled'] = self.app_config.get('local', 'enabled') == 'true'
+        self.config['forwarding_enabled'] = self.app_config.get('forwarding', 'enabled') == 'true'
+        self.config['forwarding_host'] = self.app_config.get('forwarding', 'host')
+        self.config['forwarding_port'] = self.app_config.get('forwarding', 'port')
 
         self.game_config_path = os.path.join(
             os.path.expandvars("%userprofile%"), 
@@ -245,23 +246,23 @@ class RLCGui(wx.Frame):
         if not self.app_config.has_section('general'):
             self.app_config.add_section('general')
         if not self.app_config.has_option('general', 'name'):
-            self.app_config.set('general', 'name', '')
+            self.app_config.set('general', 'name', self.config['name'])
         if not self.app_config.has_option('general', 'token'):
-            self.app_config.set('general', 'token', '')
+            self.app_config.set('general', 'token', str(self.config['token']))
 
         if not self.app_config.has_section('local'):
             self.app_config.add_section('local')
         if not self.app_config.has_option('local', 'enabled'):
-            self.app_config.set('local', 'enabled', 'false')
+            self.app_config.set('local', 'enabled', str(self.config['local_enabled']).lower())
 
         if not self.app_config.has_section('forwarding'):
             self.app_config.add_section('forwarding')
         if not self.app_config.has_option('forwarding', 'enabled'):
-            self.app_config.set('forwarding', 'enabled', 'false')
+            self.app_config.set('forwarding', 'enabled', str(self.config['forwarding_enabled']).lower())
         if not self.app_config.has_option('forwarding', 'host'):
-            self.app_config.set('forwarding', 'host', 'localhost')
+            self.app_config.set('forwarding', 'host', self.config['forwarding_host'])
         if not self.app_config.has_option('forwarding', 'port'):
-            self.app_config.set('forwarding', 'port', '20776')
+            self.app_config.set('forwarding', 'port', self.config['forwarding_port'])
 
         with open(self.app_config_path, 'w') as config:
             self.app_config.write(config)
