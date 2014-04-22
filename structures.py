@@ -246,6 +246,7 @@ class SettingsDialog(wx.Dialog):
         self.general_token_text = wx.TextCtrl(
             general_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0
         )
+        self.general_token_text.Bind(wx.EVT_KILL_FOCUS, self.update_drivers)
         general_token.Add(self.general_token_text, 1, wx.ALL, 5)
 
         general_sizer.Add(general_token, 1, wx.EXPAND, 5)
@@ -388,6 +389,8 @@ class SettingsDialog(wx.Dialog):
         except requests.exceptions.RequestException:
             return []
 
+    def update_drivers(self, event):
+        self.general_name_combo.SetItems(self.get_drivers())
 
 
 class Instructions(wx.Frame):
