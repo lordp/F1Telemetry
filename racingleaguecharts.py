@@ -171,8 +171,6 @@ class RLCGui(wx.Frame):
 
         self.start_button = wx.Button(self, wx.ID_ANY, u"&Start", wx.DefaultPosition, wx.DefaultSize, 0)
         self.start_button.Bind(wx.EVT_BUTTON, self.start_logging)
-        if not self.config['game_enabled']:
-            self.start_button.Disable()
         buttons.Add(self.start_button, 0, wx.ALL, 5)
 
         sizer.Add(buttons, 1, wx.ALIGN_CENTER_HORIZONTAL, 5)
