@@ -231,7 +231,6 @@ class RLCGui(wx.Frame):
         except requests.exceptions.RequestException:
             return []
 
-
     def show_settings(self, event):
         settings = SettingsDialog(None)
         settings.update_ui(self.config)
