@@ -347,7 +347,7 @@ class SettingsDialog(wx.Dialog):
             token = self.general_token_text.GetValue()
             req = requests.get('https://racingleaguecharts.com/drivers.json?token={0}'.format(token), verify=False)
             if req.status_code == 200:
-                return req.json()
+                return req.json()['drivers']
             else:
                 raise requests.exceptions.RequestException
         except requests.exceptions.RequestException:
