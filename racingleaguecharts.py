@@ -76,7 +76,8 @@ class RLCGui(wx.Frame):
             'forwarding_host': 'localhost',
             'forwarding_port': '20776',
             'game_running': False,
-            'game_config_missing': False
+            'game_config_missing': False,
+            'game_enabled': False
         }
 
         self.app_config_path = 'config.ini'
