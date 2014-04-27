@@ -38,10 +38,12 @@ class RacingLeagueCharts:
 
     def lap(self, lap):
         raw_times, formatted_times = self.format_lap_times(lap)
-        self.add_log_entry("Lap: {0:02d} {1} {2} {3} {4}".format(
-            int(lap.lap_number), formatted_times['total'],
+        speed = round(decimal.Decimal(lap.top_speed), 3)
+        fuel = round(decimal.Decimal(lap.current_fuel), 3)
+        self.add_log_entry("Lap: {0:02d} {1} {2} {3} {4} {5} {6}".format(
+            int(lap.lap_number) + 1, formatted_times['total'],
             formatted_times['s1'], formatted_times['s2'],
-            formatted_times['s3'])
+            formatted_times['s3'], speed, fuel)
         )
         self.parent.last_lap.SetLabel('Last Lap: {0}'.format(formatted_times['total']))
         if self.parent.config['local_enabled']:

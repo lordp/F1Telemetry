@@ -120,15 +120,9 @@ class Session(object):
 
         if self.top_speed < self.current_lap.top_speed:
             self.top_speed = self.current_lap.top_speed
-            self.logger.add_log_entry("Top speed set to {0} on lap {1}".format(
-                round(decimal.Decimal(self.top_speed * 3.6), 3), self.current_lap.lap_number)
-            )
 
         if self.current_fuel is None or self.current_fuel > self.current_lap.current_fuel:
             self.current_fuel = self.current_lap.current_fuel
-            self.logger.add_log_entry("Fuel remaining at the end of lap {0} is {1}".format(
-                self.current_lap.lap_number, round(decimal.Decimal(self.current_fuel), 3))
-            )
 
         # create a new lap
         self.logger.lap(self.current_lap)  # todo new thread?
