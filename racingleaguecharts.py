@@ -213,7 +213,7 @@ class RLCGui(wx.Frame):
         self.Show()
 
     def refresh_race_list(self, event):
-        self.race_options = []
+        self.race_options = ['No Race']
         races = self.get_races()
         for race in races:
             self.race_options.append(race[1])
