@@ -107,6 +107,8 @@ class RLCGui(wx.Frame):
             self.config['game_host'] = self.motion.get('ip')
         else:
             self.config['game_config_missing'] = True
+            wx.MessageBox('WARNING: The game config cannot be found. This is expected to be at the following path\n\n'
+                          '%s\n\nIf it is elsewhere, please let lordp know.' % self.game_config_path)
 
         processes = wmi.WMI().Win32_Process(name='F1_2013.exe')
         self.config['game_running'] = (len(processes) != 0)
