@@ -9,6 +9,7 @@ from socket_handler import *
 import loggers
 from structures import *
 from wx.lib.embeddedimage import PyEmbeddedImage
+from updater import *
 
 rlc_icon = PyEmbeddedImage(
     "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAABK1J"
@@ -117,6 +118,8 @@ class RLCGui(wx.Frame):
         if self.config['game_running'] and not self.config['game_enabled']:
             wx.MessageBox('WARNING: The game is running, but the telemetry system is not enabled. Once you '
                           'have enabled the telemetry system in the settings, the game will need to be restarted.')
+
+        UpdaterThread(self.version)
 
         # Start Menu bar
         menu_bar = wx.MenuBar()
