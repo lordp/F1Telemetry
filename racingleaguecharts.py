@@ -184,7 +184,7 @@ class RLCGui(wx.Frame):
         self.race_options = [u'No Race']
         self.races = self.get_races()
         for race in self.races:
-            self.race_options.append(race[1])
+            self.race_options.append(race['name'])
         race_chooser = wx.BoxSizer(wx.HORIZONTAL)
         race_chooser_label = wx.StaticText(self, wx.ID_ANY, u"Race:", wx.DefaultPosition, wx.DefaultSize, 0)
         race_chooser_label.Wrap(-1)
@@ -321,7 +321,7 @@ class RLCGui(wx.Frame):
                 return False
 
             try:
-                self.race_id = next(race for race in self.races if race[1] == self.race_combo.GetValue())[0]
+                self.race_id = next(race for race in self.races if race['name'] == self.race_combo.GetValue())['id']
             except:
                 self.race_id = None
 
