@@ -8,8 +8,8 @@ class RacingLeagueCharts:
         self.parent = parent
         self.log = []
 
-        self.session_url = 'https://racingleaguecharts.com/sessions/register'
-        self.lap_url = 'https://racingleaguecharts.com/laps'
+        self.session_url = 'https://racingleaguecharts.com/sessions/register.json'
+        self.lap_url = 'https://racingleaguecharts.com/laps.json'
 
     def add_log_entry(self, msg):
         self.log.append('[{0}]: {1}'.format(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), msg))
