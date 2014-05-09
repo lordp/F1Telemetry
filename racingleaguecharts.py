@@ -289,6 +289,7 @@ class RLCGui(wx.Frame):
         self.motion.set('enabled', str(self.config['game_enabled']).lower())
         self.motion.set('ip', self.config['game_host'])
         self.motion.set('port', self.config['game_port'])
+        self.motion.set('extradata', '3')
 
         with open(self.game_config_path, 'w') as config:
             config.write(etree.tostring(self.motion.getparent(), encoding='utf-8', xml_declaration=True))
