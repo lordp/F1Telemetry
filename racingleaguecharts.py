@@ -329,8 +329,7 @@ class RLCGui(wx.Frame):
             self.start_button.SetLabel('&Stop')
             self.logger = loggers.RacingLeagueCharts(self)
             session = Session(self.logger)
-            self.thread = SocketThread(session, self.config['game_port'], self.status_bar,
-                                       self.config['forwarding_host'], self.config['forwarding_port'])
+            self.thread = SocketThread(session, self.config['game_port'], self.status_bar, self.config)
 
     def quit_app(self, event):
         if self.thread is not None:

@@ -6,7 +6,7 @@ import threading
 
 
 class SocketThread(threading.Thread):
-    def __init__(self, session, port, status_bar, forwarding_host=None, forwarding_port=None):
+    def __init__(self, session, port, status_bar, config):
         threading.Thread.__init__(self)
         self.session = session
         self.status_bar = status_bar
@@ -15,13 +15,14 @@ class SocketThread(threading.Thread):
 
         self.session_type = None
         self.track_length = None
+        self.forwarding_socket = None
 
         #open socket
         self.socket = socket(AF_INET, SOCK_DGRAM)
         self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
         self.socket.bind(('', int(port)))
 
-        if forwarding_host and forwarding_port:
+        if config['forwarding_enabled'] and config['forwarding_host'] and config['forwarding_port']:
             self.forwarding_socket = socket(AF_INET, SOCK_DGRAM)
             self.forwarding_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
             self.forwarding_socket.connect((forwarding_host, int(forwarding_port)))
