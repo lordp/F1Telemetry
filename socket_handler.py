@@ -25,7 +25,7 @@ class SocketThread(threading.Thread):
         if config['forwarding_enabled'] and config['forwarding_host'] and config['forwarding_port']:
             self.forwarding_socket = socket(AF_INET, SOCK_DGRAM)
             self.forwarding_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-            self.forwarding_socket.connect((forwarding_host, int(forwarding_port)))
+            self.forwarding_socket.connect((config['forwarding_host'], int(config['forwarding_port'])))
 
         self.daemon = True
         self.start()
