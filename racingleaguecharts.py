@@ -219,7 +219,7 @@ class RLCGui(wx.Frame):
         self.race_options = ['No Race']
         races = self.get_races()
         for race in races:
-            self.race_options.append(race[1])
+            self.race_options.append(race['name'])
         self.race_combo.SetItems(self.race_options)
         self.race_combo.SetLabelText(u'No Race')
         self.status_bar.SetStatusText(u'Race list refreshed.')
