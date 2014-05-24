@@ -103,10 +103,15 @@ class RLCGui(wx.Frame):
         if os.path.isfile(self.game_config_path):
             tree = etree.parse(self.game_config_path)
             self.motion = tree.xpath('motion')[0]
-            self.config['game_enabled'] = (self.motion.get('enabled') == 'true' and self.motion.get('extradata') == '3')
+            self.config['game_enabled'] = (self.motion.get('enabled') == 'true' and
+                                           self.motion.get('extradata') == '3' and
+                                           self.motion.get('ip') == '127.0.0.1'
+                                          )
 
             self.config['game_port'] = self.motion.get('port')
             self.config['game_host'] = self.motion.get('ip')
+            if self.config['game_host'] != '127.0.0.1':
+                self.config['game_host'] = '127.0.0.1'
         else:
             self.config['game_config_missing'] = True
             wx.MessageBox('WARNING: The game config cannot be found. This is expected to be at the following path\n\n'
