@@ -21,7 +21,7 @@ class UpdaterThread(threading.Thread):
         if req.status_code == 200:
             tree = etree.fromstring(req.text)
             version = tree.find('version').text
-            if self.version_compare(version, self.current_version):
+            if self.version_compare(version, self.current_version) > 0:
                 msg = "New version!\n\nThere is a new version (%s) of the app available for download!" % version
                 dlg = wx.MessageDialog(self.parent, msg, 'Racing League Charts', wx.OK | wx.CANCEL | wx.ICON_WARNING)
                 dlg.SetOKLabel('Download')
