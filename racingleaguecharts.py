@@ -97,7 +97,7 @@ class RLCGui(wx.Frame):
         self.config['forwarding_port'] = self.app_config.get('forwarding', 'port')
 
         self.game_config_path = os.path.join(
-            os.path.expandvars("%userprofile%"), 
+            os.path.expandvars("%userprofile%"),
             "Documents\\my games\\formulaone2013\\hardwaresettings\\hardware_settings_config.xml"
         )
         if os.path.isfile(self.game_config_path):
@@ -131,7 +131,7 @@ class RLCGui(wx.Frame):
 
         # Start File
         menu_file = wx.Menu()
-        
+
         file_settings = wx.MenuItem(menu_file, wx.ID_SETUP, '&Settings')
         menu_file.AppendItem(file_settings)
         self.Bind(wx.EVT_MENU, self.show_settings, file_settings)
@@ -147,17 +147,17 @@ class RLCGui(wx.Frame):
 
         # Start Help
         menu_help = wx.Menu()
-        
+
         help_instructions = wx.MenuItem(menu_help, wx.ID_HELP_PROCEDURES, "&Instructions")
         menu_help.AppendItem(help_instructions)
         self.Bind(wx.EVT_MENU, self.menu_instructions, help_instructions)
 
         menu_help.AppendSeparator()
-        
+
         help_about = wx.MenuItem(menu_help, wx.ID_ABOUT, "&About")
         menu_help.AppendItem(help_about)
         self.Bind(wx.EVT_MENU, self.menu_about, help_about)
-        
+
         menu_bar.Append(menu_help, "&Help")
         # End Help
 
@@ -350,12 +350,12 @@ class RLCGui(wx.Frame):
         info.SetVersion(self.version)
         info.SetWebSite('https://racingleaguecharts.com')
         info.SetDescription(description)
-        
+
         #info.SetIcon(wx.Icon('logo', wx.BITMAP_TYPE_PNG))
         #info.SetCopyright('')
         #info.SetLicence(licence)
         #info.AddDeveloper('Lordp')
-        
+
         wx.AboutBox(info)
 
     def menu_instructions(self, event):
