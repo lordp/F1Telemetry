@@ -124,7 +124,7 @@ class RLCGui(wx.Frame):
             wx.MessageBox('WARNING: The game is running, but the telemetry system is not enabled. Once you '
                           'have enabled the telemetry system in the settings, the game will need to be restarted.')
 
-        UpdaterThread(self.version)
+        UpdaterThread(self.version, self)
 
         # Start Menu bar
         menu_bar = wx.MenuBar()
