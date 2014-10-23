@@ -180,19 +180,18 @@ class SettingsDialog(wx.Dialog):
     def __init__(self, *args, **kw):
         super(SettingsDialog, self).__init__(*args, **kw)
 
+        self.parent = args[0]
+
         self.SetTitle('Settings')
 
         self.SetBackgroundColour("white")
-        self.SetSize((250, 400))
+        self.SetSize((250, 475))
 
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         general_panel = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
 
         general_sizer = wx.StaticBoxSizer(wx.StaticBox(general_panel, wx.ID_ANY, u"General"), wx.VERTICAL)
-
-        self.enable_general = wx.CheckBox(general_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0)
-        general_sizer.Add(self.enable_general, 0, wx.ALL, 0)
 
         general_token = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -220,23 +219,45 @@ class SettingsDialog(wx.Dialog):
 
         general_sizer.Add(general_name, 1, wx.EXPAND, 5)
 
-        general_port = wx.BoxSizer(wx.HORIZONTAL)
-
-        general_port_label = wx.StaticText(general_panel, wx.ID_ANY, u"Port:", wx.DefaultPosition, wx.DefaultSize, 0)
-        general_port.Add(general_port_label, 0, wx.TOP, 9)
-
-        self.general_port_text = wx.TextCtrl(
-            general_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0
-        )
-        general_port.Add(self.general_port_text, 1, wx.ALL, 5)
-
-        general_sizer.Add(general_port, 1, wx.EXPAND, 5)
-
         general_panel.SetSizer(general_sizer)
         general_panel.Layout()
         general_sizer.Fit(general_panel)
 
         sizer.Add(general_panel, 1, wx.ALL | wx.EXPAND, 5)
+
+        # F1 options
+        f1_panel = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
+        f1_sizer = wx.StaticBoxSizer(wx.StaticBox(f1_panel, wx.ID_ANY, u"F1 2013/2014"), wx.VERTICAL)
+
+        f1_config_location = wx.BoxSizer(wx.HORIZONTAL)
+
+        f1_config_location_button = wx.Button(f1_panel, wx.ID_ANY, u"&Locate Config", wx.DefaultPosition, wx.DefaultSize, 0)
+        f1_config_location_button.Bind(wx.EVT_BUTTON, self.locate_config)
+
+        f1_config_location.Add(f1_config_location_button, 1, wx.ALL, 5)
+
+        f1_sizer.Add(f1_config_location, 1, wx.EXPAND, 5)
+
+        self.enable_general = wx.CheckBox(f1_panel, wx.ID_ANY, u"Enable", wx.DefaultPosition, wx.DefaultSize, 0)
+        f1_sizer.Add(self.enable_general, 0, wx.ALL, 0)
+
+        f1_port = wx.BoxSizer(wx.HORIZONTAL)
+
+        f1_port_label = wx.StaticText(f1_panel, wx.ID_ANY, u"Port:", wx.DefaultPosition, wx.DefaultSize, 0)
+        f1_port.Add(f1_port_label, 0, wx.TOP, 9)
+
+        self.f1_port_text = wx.TextCtrl(
+            f1_panel, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0
+        )
+        f1_port.Add(self.f1_port_text, 1, wx.ALL, 5)
+
+        f1_sizer.Add(f1_port, 1, wx.EXPAND, 5)
+
+        f1_panel.SetSizer(f1_sizer)
+        f1_panel.Layout()
+        f1_sizer.Fit(f1_panel)
+
+        sizer.Add(f1_panel, 1, wx.ALL | wx.EXPAND, 5)
 
         # Local mode options
         local_panel = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
@@ -307,34 +328,22 @@ class SettingsDialog(wx.Dialog):
         self.Layout()
 
     def update_ui(self, config):
-        if config['game_config_missing'] or (config['game_running'] and not config['game_enabled']):
-            if config['game_config_missing']:
-                self.enable_general.Disable()
-            self.general_token_text.Disable()
-            self.general_port_text.Disable()
-            self.general_name_combo.Disable()
-            self.enable_local_mode.Disable()
-            self.enable_forwarding.Disable()
-            self.forwarding_host_text.Disable()
-            self.forwarding_port_text.Disable()
-            return False
+        self.enable_general.SetValue(config['game_enabled'])
+        self.f1_port_text.SetValue(config['f1_port'])
+        self.general_token_text.SetValue(config['token'])
+        self.general_name_combo.SetItems(self.get_drivers())
+        if config['name'] in self.general_name_combo.GetItems():
+            self.general_name_combo.SetValue(config['name'])
         else:
-            self.enable_general.SetValue(config['game_enabled'])
-            self.general_port_text.SetValue(config['game_port'])
-            self.general_token_text.SetValue(config['token'])
-            self.general_name_combo.SetItems(self.get_drivers())
-            if config['name'] in self.general_name_combo.GetItems():
-                self.general_name_combo.SetValue(config['name'])
-            else:
-                config['name'] = None
+            config['name'] = None
 
-            self.enable_local_mode.SetValue(config['local_enabled'])
+        self.enable_local_mode.SetValue(config['local_enabled'])
 
-            self.enable_forwarding.SetValue(config['forwarding_enabled'])
-            self.forwarding_host_text.SetValue(config['forwarding_host'])
-            self.forwarding_port_text.SetValue(config['forwarding_port'])
+        self.enable_forwarding.SetValue(config['forwarding_enabled'])
+        self.forwarding_host_text.SetValue(config['forwarding_host'])
+        self.forwarding_port_text.SetValue(config['forwarding_port'])
 
-            return True
+        return True
 
     def get_drivers(self):
         try:
@@ -350,6 +359,16 @@ class SettingsDialog(wx.Dialog):
     def update_drivers(self, event):
         self.general_name_combo.SetItems(self.get_drivers())
 
+    def locate_config(self, event):
+        locate_file_dialog = wx.FileDialog(self, "Locate", "", "",
+                                           "Config File (hardware_settings_config.xml)|hardware_settings_config.xml",
+                                           wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        locate_file_dialog.ShowModal()
+        self.parent.config['game_config'] = locate_file_dialog.GetPath()
+        self.parent.config['game_config_missing'] = False
+        self.parent.load_game_config()
+        self.update_ui(self.parent.config)
+        locate_file_dialog.Destroy()
 
 class Instructions(wx.Frame):
     def __init__(self, parent, id, title):

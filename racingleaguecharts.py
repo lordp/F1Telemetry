@@ -69,7 +69,7 @@ class RLCGui(wx.Frame):
 
         self.config = {
             'game_host': '127.0.0.1',
-            'game_port': 20777,
+            'f1_port': '20777',
             'name': '',
             'token': '',
             'local_enabled': False,
@@ -78,7 +78,8 @@ class RLCGui(wx.Frame):
             'forwarding_port': '20776',
             'game_running': False,
             'game_config_missing': False,
-            'game_enabled': False
+            'game_enabled': False,
+            'game_config': ''
         }
 
         self.app_config_path = 'config.ini'
@@ -91,38 +92,18 @@ class RLCGui(wx.Frame):
         # set local values based on what is in the config file
         self.config['name'] = self.app_config.get('general', 'name')
         self.config['token'] = self.app_config.get('general', 'token')
+        self.config['game_config'] = self.app_config.get('f1', 'game_config')
         self.config['local_enabled'] = self.app_config.get('local', 'enabled') == 'true'
         self.config['forwarding_enabled'] = self.app_config.get('forwarding', 'enabled') == 'true'
         self.config['forwarding_host'] = self.app_config.get('forwarding', 'host')
         self.config['forwarding_port'] = self.app_config.get('forwarding', 'port')
 
-        self.game_config_path = os.path.join(
-            os.path.expandvars("%userprofile%"),
-            "Documents\\my games\\formulaone2013\\hardwaresettings\\hardware_settings_config.xml"
-        )
-        if os.path.isfile(self.game_config_path):
-            tree = etree.parse(self.game_config_path)
-            self.motion = tree.xpath('motion')[0]
-            self.config['game_enabled'] = (self.motion.get('enabled') == 'true' and
-                                           self.motion.get('extradata') == '3' and
-                                           self.motion.get('ip') == '127.0.0.1'
-                                          )
-
-            self.config['game_port'] = self.motion.get('port')
-            self.config['game_host'] = self.motion.get('ip')
-            if self.config['game_host'] != '127.0.0.1':
-                self.config['game_host'] = '127.0.0.1'
+        if os.path.isfile(self.config['game_config']):
+            self.load_game_config()
         else:
             self.config['game_config_missing'] = True
             wx.MessageBox('WARNING: The game config cannot be found. This is expected to be at the following path\n\n'
                           '%s\n\nIf it is elsewhere, please let lordp know.' % self.game_config_path)
-
-        processes = wmi.WMI().Win32_Process(name='F1_2013.exe')
-        self.config['game_running'] = (len(processes) != 0)
-
-        if self.config['game_running'] and not self.config['game_enabled']:
-            wx.MessageBox('WARNING: The game is running, but the telemetry system is not enabled. Once you '
-                          'have enabled the telemetry system in the settings, the game will need to be restarted.')
 
         UpdaterThread(self.version, self)
 
@@ -220,6 +201,19 @@ class RLCGui(wx.Frame):
 
         self.Show()
 
+    def load_game_config(self):
+        tree = etree.parse(self.config['game_config'])
+        self.motion = tree.xpath('motion')[0]
+        self.config['game_enabled'] = (self.motion.get('enabled') == 'true' and
+                                       self.motion.get('extradata') == '3' and
+                                       self.motion.get('ip') == '127.0.0.1'
+                                      )
+
+        self.config['f1_port'] = self.motion.get('port')
+        self.config['game_host'] = self.motion.get('ip')
+        if self.config['game_host'] != '127.0.0.1':
+            self.config['game_host'] = '127.0.0.1'
+
     def refresh_race_list(self, event):
         self.race_options = ['No Race']
         races = self.get_races()
@@ -240,7 +234,7 @@ class RLCGui(wx.Frame):
             return []
 
     def show_settings(self, event):
-        settings = SettingsDialog(None)
+        settings = SettingsDialog(self)
         settings.update_ui(self.config)
         result = settings.ShowModal()
         if result == wx.ID_OK:
@@ -262,6 +256,11 @@ class RLCGui(wx.Frame):
         if not self.app_config.has_option('general', 'token'):
             self.app_config.set('general', 'token', str(self.config['token']))
 
+        if not self.app_config.has_section('f1'):
+            self.app_config.add_section('f1')
+        if not self.app_config.has_option('f1', 'game_config'):
+            self.app_config.set('f1', 'game_config', str(self.config['game_config']))
+
         if not self.app_config.has_section('local'):
             self.app_config.add_section('local')
         if not self.app_config.has_option('local', 'enabled'):
@@ -280,10 +279,11 @@ class RLCGui(wx.Frame):
             self.app_config.write(config)
 
     def save_config(self, settings):
-        self.config['game_enabled'] = settings.enable_general.IsChecked()
-        self.config['game_port'] = settings.general_port_text.GetValue()
-        self.config['name'] = settings.general_name_combo.GetValue()
-        self.config['token'] = settings.general_token_text.GetValue()
+        self.config['game_enabled'] = settings.enable_f1.IsChecked()
+        self.config['f1_port'] = settings.f1_port_text.GetValue()
+
+        self.config['name'] = settings.app_name_combo.GetValue()
+        self.config['token'] = settings.app_token_text.GetValue()
 
         self.config['local_enabled'] = settings.enable_local_mode.IsChecked()
 
@@ -296,11 +296,13 @@ class RLCGui(wx.Frame):
         self.motion.set('port', self.config['game_port'])
         self.motion.set('extradata', '3')
 
-        with open(self.game_config_path, 'w') as config:
+        with open(self.config['game_config'], 'w') as config:
             config.write(etree.tostring(self.motion.getparent(), encoding='utf-8', xml_declaration=True))
 
         self.app_config.set('general', 'name', self.config['name'])
         self.app_config.set('general', 'token', self.config['token'])
+        self.app_config.set('f1', 'game_config', str(self.config['game_config']))
+        self.app_config.set('f1', 'port', str(self.config['f1_port']))
         self.app_config.set('local', 'enabled', str(self.config['local_enabled']).lower())
         self.app_config.set('forwarding', 'enabled', str(self.config['forwarding_enabled']).lower())
         self.app_config.set('forwarding', 'host', self.config['forwarding_host'])
