@@ -102,8 +102,8 @@ class RLCGui(wx.Frame):
             self.load_game_config()
         else:
             self.config['game_config_missing'] = True
-            wx.MessageBox('WARNING: The game config cannot be found. This is expected to be at the following path\n\n'
-                          '%s\n\nIf it is elsewhere, please let lordp know.' % self.config['game_config'])
+            wx.MessageBox('WARNING: The game config cannot be found. Please open the settings and click the locate '
+                          'button.')
 
         UpdaterThread(self.version, self)
 
