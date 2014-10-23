@@ -279,7 +279,7 @@ class RLCGui(wx.Frame):
             self.app_config.write(config)
 
     def save_config(self, settings):
-        self.config['game_enabled'] = settings.enable_f1.IsChecked()
+        self.config['game_enabled'] = settings.enable_general.IsChecked()
         self.config['f1_port'] = settings.f1_port_text.GetValue()
 
         self.config['name'] = settings.app_name_combo.GetValue()
