@@ -282,8 +282,8 @@ class RLCGui(wx.Frame):
         self.config['game_enabled'] = settings.enable_general.IsChecked()
         self.config['f1_port'] = settings.f1_port_text.GetValue()
 
-        self.config['name'] = settings.app_name_combo.GetValue()
-        self.config['token'] = settings.app_token_text.GetValue()
+        self.config['name'] = settings.general_name_combo.GetValue()
+        self.config['token'] = settings.general_token_text.GetValue()
 
         self.config['local_enabled'] = settings.enable_local_mode.IsChecked()
 
@@ -293,7 +293,7 @@ class RLCGui(wx.Frame):
 
         self.motion.set('enabled', str(self.config['game_enabled']).lower())
         self.motion.set('ip', self.config['game_host'])
-        self.motion.set('port', self.config['game_port'])
+        self.motion.set('port', self.config['f1_port'])
         self.motion.set('extradata', '3')
 
         with open(self.config['game_config'], 'w') as config:
