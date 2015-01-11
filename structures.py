@@ -103,11 +103,9 @@ class Session(object):
         self.last_lap = None
         self.current_lap = None
         self.fastest_lap = None
-        self.laps = list()
-        self.laps.append(Lap(self))
-        self.current_lap = self.laps[0]
         self.top_speed = 0
         self.current_fuel = None
+        self.reset_laps()
 
     def new_lap(self):
         #record a fastest lap if we don't already have one
@@ -129,6 +127,11 @@ class Session(object):
         new_lap = Lap(self)
         self.current_lap = new_lap
         self.laps.append(new_lap)
+
+    def reset_laps(self):
+        self.laps = list()
+        self.laps.append(Lap(self))
+        self.current_lap = self.laps[0]
 
 
 class ShowLogDialog(wx.Dialog):

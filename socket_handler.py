@@ -65,6 +65,7 @@ class SocketThread(threading.Thread):
             if self.session_type != packet.session_type or self.track_length != packet.track_length:
                 self.session_type = packet.session_type
                 self.track_length = packet.track_length
+                self.session.reset_laps()
                 self.session.logger.request_session(packet)
 
             #add this packet object to the current session
