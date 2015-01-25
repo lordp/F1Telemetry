@@ -206,17 +206,24 @@ class RLCGui(wx.Frame):
         self.Show()
 
     def load_game_config(self):
-        tree = etree.parse(self.config['game_config'])
-        self.motion = tree.xpath('motion')[0]
-        self.config['game_enabled'] = (self.motion.get('enabled') == 'true' and
-                                       self.motion.get('extradata') == '3' and
-                                       self.motion.get('ip') == '127.0.0.1'
-                                      )
+        if self.config['game_config'] == '':
+            return
+        try:
+            tree = etree.parse(self.config['game_config'])
+            self.motion = tree.xpath('motion')[0]
+            self.config['game_enabled'] = (self.motion.get('enabled') == 'true' and
+                                           self.motion.get('extradata') == '3' and
+                                           self.motion.get('ip') == '127.0.0.1'
+                                          )
 
-        self.config['f1_port'] = self.motion.get('port')
-        self.config['game_host'] = self.motion.get('ip')
-        if self.config['game_host'] != '127.0.0.1':
-            self.config['game_host'] = '127.0.0.1'
+            self.config['f1_port'] = self.motion.get('port')
+            self.config['game_host'] = self.motion.get('ip')
+            if self.config['game_host'] != '127.0.0.1':
+                self.config['game_host'] = '127.0.0.1'
+        except etree.XMLSyntaxError:
+            wx.MessageBox('ERROR: The game config file is corrupt and cannot be read. Please delete the file, run '
+                          'the game to regenerate it, and try again.'
+            )
 
     def refresh_race_list(self, event):
         self.race_options = ['No Race']
