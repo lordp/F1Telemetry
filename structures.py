@@ -335,10 +335,8 @@ class SettingsDialog(wx.Dialog):
         self.f1_port_text.SetValue(config['f1_port'])
         self.general_token_text.SetValue(config['token'])
         self.general_name_combo.SetItems(self.get_drivers())
-        if config['name'] in self.general_name_combo.GetItems():
-            self.general_name_combo.SetValue(config['name'])
-        else:
-            config['name'] = None
+
+        self.select_driver()
 
         self.enable_local_mode.SetValue(config['local_enabled'])
 
@@ -361,6 +359,18 @@ class SettingsDialog(wx.Dialog):
 
     def update_drivers(self, event):
         self.general_name_combo.SetItems(self.get_drivers())
+        self.select_driver()
+
+    def select_driver(self):
+        if self.parent.config['name'] in self.general_name_combo.GetItems():
+            self.general_name_combo.SetValue(self.parent.config['name'])
+        else:
+            options = self.general_name_combo.GetItems()
+            if len(options) > 0:
+                self.general_name_combo.SetValue(options[0])
+                self.parent.config['name'] = options[0]
+            else:
+                self.parent.config['name'] = None
 
     def locate_config(self, event):
         locate_file_dialog = wx.FileDialog(self, "Locate", "", "",
