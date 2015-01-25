@@ -67,6 +67,8 @@ class RLCGui(wx.Frame):
         self.logger = None
         self.thread = None
 
+        self.motion = None
+
         self.config = {
             'game_host': '127.0.0.1',
             'f1_port': '20777',
@@ -291,13 +293,14 @@ class RLCGui(wx.Frame):
         self.config['forwarding_host'] = settings.forwarding_host_text.GetValue()
         self.config['forwarding_port'] = settings.forwarding_port_text.GetValue()
 
-        self.motion.set('enabled', str(self.config['game_enabled']).lower())
-        self.motion.set('ip', self.config['game_host'])
-        self.motion.set('port', self.config['f1_port'])
-        self.motion.set('extradata', '3')
+        if self.motion is not None:
+            self.motion.set('enabled', str(self.config['game_enabled']).lower())
+            self.motion.set('ip', self.config['game_host'])
+            self.motion.set('port', self.config['f1_port'])
+            self.motion.set('extradata', '3')
 
-        with open(self.config['game_config'], 'w') as config:
-            config.write(etree.tostring(self.motion.getparent(), encoding='utf-8', xml_declaration=True))
+            with open(self.config['game_config'], 'w') as config:
+                config.write(etree.tostring(self.motion.getparent(), encoding='utf-8', xml_declaration=True))
 
         self.app_config.set('general', 'name', self.config['name'])
         self.app_config.set('general', 'token', self.config['token'])
