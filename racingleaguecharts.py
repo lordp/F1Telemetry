@@ -105,7 +105,9 @@ class RLCGui(wx.Frame):
         else:
             self.config['game_config_missing'] = True
             wx.MessageBox('WARNING: The game config cannot be found. Please open the settings and click the locate '
-                          'button.')
+                          'button. The game config file can usually be found in \n\n'
+                          'My Documents\\My Games\\FormulaOne201x\\hardware_settings'
+            )
 
         UpdaterThread(self.version, self)
 
