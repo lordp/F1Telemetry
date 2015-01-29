@@ -380,7 +380,10 @@ class SettingsDialog(wx.Dialog):
         self.parent.config['game_config'] = locate_file_dialog.GetPath()
         self.parent.config['game_config_missing'] = False
         self.parent.load_game_config()
-        self.update_ui(self.parent.config)
+
+        self.enable_general.SetValue(self.parent.config['game_enabled'])
+        self.f1_port_text.SetValue(self.parent.config['f1_port'])
+
         locate_file_dialog.Destroy()
 
 class Instructions(wx.Frame):
