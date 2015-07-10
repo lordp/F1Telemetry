@@ -31,6 +31,8 @@ class RacingLeagueCharts:
             self.parent.session_id.SetLabel('Session: {0}'.format(self.session_id))
             self.add_log_entry("Session id: {0}".format(self.session_id))
             return True
+
+        self.add_log_entry("Session request failed - status code is {0}".format(r.status_code))
         return False
 
     @staticmethod
@@ -57,6 +59,8 @@ class RacingLeagueCharts:
         r = requests.post(self.lap_url, data=payload, verify=False)
         if r.status_code == 200:
             return True
+
+        self.add_log_entry("Lap submission failed - status code is {0}".format(r.status_code))
         return False
 
     @staticmethod
