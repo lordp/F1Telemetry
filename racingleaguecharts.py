@@ -68,6 +68,8 @@ class RLCGui(wx.Frame):
         self.thread = None
 
         self.motion = None
+        self.motion_udp = None
+        self.motion_udp_rlc = None
 
         self.config = {
             'game_host': '127.0.0.1',
@@ -211,19 +213,43 @@ class RLCGui(wx.Frame):
         try:
             tree = etree.parse(self.config['game_config'])
             self.motion = tree.xpath('motion')[0]
-            self.config['game_enabled'] = (self.motion.get('enabled') == 'true' and
-                                           self.motion.get('extradata') == '3' and
-                                           self.motion.get('ip') == '127.0.0.1'
-                                          )
+            self.motion_udp = tree.xpath('motion/udp')
+            self.motion_udp_rlc = tree.xpath("motion/udp[@tag='rlc']")
+            if len(self.motion_udp_rlc) > 0:
+                self.motion_udp_rlc = self.motion_udp_rlc[0]
+                self.config['game_enabled'] = (self.motion_udp_rlc.get('enabled') == 'true' and
+                                               self.motion_udp_rlc.get('ip') == '127.0.0.1'
+                                              )
+                self.config['f1_port'] = self.motion_udp_rlc.get('port')
+                self.config['game_host'] = self.motion_udp_rlc.get('ip')
+            elif len(self.motion_udp) > 0:
+                self.motion_udp_rlc = self.motion_udp[self.find_rlc_tag(self.motion_udp)]
+                self.config['game_enabled'] = (self.motion_udp_rlc.get('enabled') == 'true' and
+                                               self.motion_udp_rlc.get('ip') == '127.0.0.1'
+                                              )
+                self.config['f1_port'] = self.motion_udp_rlc.get('port')
+                self.config['game_host'] = self.motion_udp_rlc.get('ip')
+            elif self.motion.get('port'):
+                self.config['game_enabled'] = (self.motion.get('enabled') == 'true' and
+                                               self.motion.get('extradata') == '3' and
+                                               self.motion.get('ip') == '127.0.0.1'
+                                              )
 
-            self.config['f1_port'] = self.motion.get('port')
-            self.config['game_host'] = self.motion.get('ip')
+                self.config['f1_port'] = self.motion.get('port')
+                self.config['game_host'] = self.motion.get('ip')
+
             if self.config['game_host'] != '127.0.0.1':
                 self.config['game_host'] = '127.0.0.1'
         except etree.XMLSyntaxError:
             wx.MessageBox('ERROR: The game config file is corrupt and cannot be read. Please delete the file, run '
                           'the game to regenerate it, and try again.'
             )
+
+    def find_rlc_tag(self, udps):
+        for idx, val in enumerate(udps):
+            if val.get('enabled') == 'false':
+                return idx
+        return 0
 
     def refresh_race_list(self, event):
         self.race_options = ['No Race']
@@ -302,7 +328,15 @@ class RLCGui(wx.Frame):
         self.config['forwarding_host'] = settings.forwarding_host_text.GetValue()
         self.config['forwarding_port'] = settings.forwarding_port_text.GetValue()
 
-        if self.motion is not None:
+        if self.motion_udp_rlc is not None:
+            self.motion_udp_rlc.set('enabled', str(self.config['game_enabled']).lower())
+            self.motion_udp_rlc.set('ip', self.config['game_host'])
+            self.motion_udp_rlc.set('port', self.config['f1_port'])
+            self.motion_udp_rlc.set('tag', 'rlc')
+
+            with open(self.config['game_config'], 'w') as config:
+                config.write(etree.tostring(self.motion_udp_rlc.getparent().getparent(), encoding='utf-8', xml_declaration=True))
+        else:
             self.motion.set('enabled', str(self.config['game_enabled']).lower())
             self.motion.set('ip', self.config['game_host'])
             self.motion.set('port', self.config['f1_port'])
