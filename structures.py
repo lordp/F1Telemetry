@@ -230,7 +230,7 @@ class SettingsDialog(wx.Dialog):
 
         # F1 options
         f1_panel = wx.Panel(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        f1_sizer = wx.StaticBoxSizer(wx.StaticBox(f1_panel, wx.ID_ANY, u"F1 2013/2014"), wx.VERTICAL)
+        f1_sizer = wx.StaticBoxSizer(wx.StaticBox(f1_panel, wx.ID_ANY, u"Codemasters F1"), wx.VERTICAL)
 
         f1_config_location = wx.BoxSizer(wx.HORIZONTAL)
 
