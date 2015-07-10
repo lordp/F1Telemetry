@@ -16,6 +16,7 @@ class RacingLeagueCharts:
 
     def request_session(self, packet):
         if self.parent.config['local_enabled']:
+            self.parent.session_id.SetLabel('Session: Local Enabled')
             return True
         self.add_log_entry('New session requested')
         track_length = decimal.Decimal(packet.track_length)
