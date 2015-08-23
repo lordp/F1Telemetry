@@ -32,7 +32,8 @@ class Packet(object):
             'brake_temperature_front_left', 'brake_temperature_front_right',
             'new_field18', 'new_field19', 'new_field20', 'new_field21',
             'completed_laps_in_race', 'total_laps_in_race', 'track_length', 'previous_lap_time',
-            'new_field_1301', 'new_field_1302', 'new_field_1303']
+            'new_field_1301', 'new_field_1302', 'new_field_1303',
+            'new_field_1501', 'new_field_1502', 'new_field_1503', 'new_field_1504']
 
     def __init__(self, data):
         self.data = dict()
