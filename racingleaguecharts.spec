@@ -1,6 +1,6 @@
 # -*- mode: python -*-
 a = Analysis(['racingleaguecharts.py'],
-             pathex=['C:\\Users\\darrylh\\Documents\\GitHub\\F1Telemetry'],
+             pathex=['C:\\Users\\darrylh\\Documents\\GitHub\\RLCApp'],
              hiddenimports=[],
              hookspath=None,
              runtime_hooks=None)
