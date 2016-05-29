@@ -18,28 +18,26 @@ class RacingLeagueCharts:
         if self.parent.config['local_enabled']:
             self.parent.session_id.SetLabel('Session: Local Enabled')
             return True
+
         self.add_log_entry('New session requested')
         track_length = decimal.Decimal(packet.track_length)
-        payload = {"driver": self.parent.config['name'],
-                   "track": round(track_length, 3),
-                   "type": packet.session_type,
-                   "race": self.parent.race_id,
-                   "token": self.parent.config['token']}
-        r = requests.post(self.session_url, data=payload, verify=False)
-        if r.status_code == 200:
-            self.session_id = r.json()['session_id']
-            self.parent.session_id.SetLabel('Session: {0}'.format(self.session_id))
-            self.add_log_entry("Session id: {0}".format(self.session_id))
-            return True
-
-        self.add_log_entry("Session request failed - status code is {0}".format(r.status_code))
-        return False
+        payload = {
+            "driver": self.parent.config['name'],
+            "track": round(track_length, 3),
+            "type": packet.session_type,
+            "race": self.parent.race_id,
+            "token": self.parent.config['token']
+        }
+        return self.send_request(self.session_url, payload)
 
     @staticmethod
     def send_sector(sector):
         print sector.sector_number, sector.sector_time
 
     def lap(self, lap):
+        if self.parent.config['local_enabled']:
+            return True
+
         raw_times, formatted_times = self.format_lap_times(lap)
         speed = round(decimal.Decimal(lap.top_speed), 3)
         fuel = round(decimal.Decimal(lap.current_fuel), 3)
@@ -48,20 +46,45 @@ class RacingLeagueCharts:
             formatted_times['s1'], formatted_times['s2'],
             formatted_times['s3'], speed, fuel)
         )
-        self.parent.last_lap.SetLabel('Last Lap: {0}'.format(formatted_times['total']))
-        if self.parent.config['local_enabled']:
-            return True
         payload = {
             "session_id": self.session_id, "lap_number": lap.lap_number,
             "sector_1": raw_times['s1'], "sector_2": raw_times['s2'], "sector_3": raw_times['s3'],
-            "total": raw_times['total'], "speed": lap.top_speed, "fuel": lap.current_fuel, "position": lap.position
+            "total": raw_times['total'], "formatted_total": formatted_times['total'], "speed": lap.top_speed,
+            "fuel": lap.current_fuel, "position": lap.position
         }
-        r = requests.post(self.lap_url, data=payload, verify=False)
-        if r.status_code == 200:
-            return True
+        return self.send_request(self.lap_url, payload)
 
-        self.add_log_entry("Lap submission failed - status code is {0}".format(r.status_code))
-        return False
+    def send_request(self, url, payload, attempts = 0):
+        if attempts > 4:
+            if url == self.lap_url:
+                self.add_log_entry("Lap submission failed for the last time.")
+            else:
+                self.add_log_entry("Session request failed for the last time.")
+
+            return False
+
+        r = requests.post(url, data=payload, verify=False)
+        if r.status_code == 200:
+            if url == self.lap_url:
+                self.parent.last_lap.SetLabel('Last Lap: {0}'.format(payload['formatted_total']))
+            else:
+                self.session_id = r.json()['session_id']
+                self.parent.session_id.SetLabel('Session: {0}'.format(self.session_id))
+                self.add_log_entry("Session id: {0}".format(self.session_id))
+
+            return True
+        else:
+            if url == self.lap_url:
+                self.parent.last_lap.SetLabel('Last Lap: Error')
+                self.add_log_entry("Lap submission failed - status code is {0}".format(r.status_code))
+            else:
+                self.parent.session_id.SetLabel('Session: Error')
+                self.add_log_entry("Session request failed - status code is {0}".format(r.status_code))
+
+            attempts += 1
+            self.send_request(url, payload, attempts)
+
+
 
     @staticmethod
     def format_time(seconds):
