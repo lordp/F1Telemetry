@@ -16,7 +16,7 @@ class RacingLeagueCharts:
 
     def request_session(self, packet):
         if self.parent.config['local_enabled']:
-            self.parent.session_id.SetLabel('Session: Local Enabled')
+            self.parent.session_id.SetLabel('Session: Local Mode Enabled')
             return True
 
         self.add_log_entry('New session requested')
@@ -35,9 +35,6 @@ class RacingLeagueCharts:
         print sector.sector_number, sector.sector_time
 
     def lap(self, lap):
-        if self.parent.config['local_enabled']:
-            return True
-
         raw_times, formatted_times = self.format_lap_times(lap)
         speed = round(decimal.Decimal(lap.top_speed), 3)
         fuel = round(decimal.Decimal(lap.current_fuel), 3)
@@ -52,6 +49,10 @@ class RacingLeagueCharts:
             "total": raw_times['total'], "formatted_total": formatted_times['total'], "speed": lap.top_speed,
             "fuel": lap.current_fuel, "position": lap.position
         }
+        if self.parent.config['local_enabled']:
+            self.parent.last_lap.SetLabel('Last Lap: {0}'.format(payload['formatted_total']))
+            return True
+
         return self.send_request(self.lap_url, payload)
 
     def send_request(self, url, payload, attempts = 0):
