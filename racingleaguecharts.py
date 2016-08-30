@@ -70,6 +70,8 @@ class RLCGui(wx.Frame):
         self.motion = None
         self.motion_udp = None
         self.motion_udp_rlc = None
+        self.motion_udp_2016 = None
+        self.motion_udp_2016_rlc = None
 
         self.config = {
             'game_host': '127.0.0.1',
@@ -215,11 +217,27 @@ class RLCGui(wx.Frame):
             self.motion = tree.xpath('motion')[0]
             self.motion_udp = tree.xpath('motion/udp')
             self.motion_udp_rlc = tree.xpath("motion/udp[@tag='rlc']")
-            if len(self.motion_udp_rlc) > 0:
-                self.motion_udp_rlc = self.motion_udp_rlc[0]
+            self.motion_udp_2016 = tree.xpath('motion/udp0')
+            self.motion_udp_2016_rlc = tree.xpath("motion/udp0[@tag='rlc']")
+            if len(self.motion_udp_2016_rlc) > 0:
+                self.motion_udp_rlc = self.motion_udp_2016_rlc[0]
                 self.config['game_enabled'] = (self.motion_udp_rlc.get('enabled') == 'true' and
                                                self.motion_udp_rlc.get('ip') == '127.0.0.1'
                                               )
+                self.config['f1_port'] = self.motion_udp_rlc.get('port')
+                self.config['game_host'] = self.motion_udp_rlc.get('ip')
+            elif len(self.motion_udp_2016) > 0:
+                self.motion_udp_rlc = self.motion_udp_2016[self.find_rlc_tag(self.motion_udp_2016)]
+                self.config['game_enabled'] = (self.motion_udp_rlc.get('enabled') == 'true' and
+                                               self.motion_udp_rlc.get('ip') == '127.0.0.1'
+                                              )
+                self.config['f1_port'] = self.motion_udp_rlc.get('port')
+                self.config['game_host'] = self.motion_udp_rlc.get('ip')
+            elif len(self.motion_udp_rlc) > 0:
+                self.motion_udp_rlc = self.motion_udp_rlc[0]
+                self.config['game_enabled'] = (self.motion_udp_rlc.get('enabled') == 'true' and
+                                               self.motion_udp_rlc.get('ip') == '127.0.0.1'
+                                               )
                 self.config['f1_port'] = self.motion_udp_rlc.get('port')
                 self.config['game_host'] = self.motion_udp_rlc.get('ip')
             elif len(self.motion_udp) > 0:
