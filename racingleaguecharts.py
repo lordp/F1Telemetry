@@ -397,10 +397,20 @@ class RLCGui(wx.Frame):
             except:
                 self.race_id = None
 
-            self.start_button.SetLabel('&Stop')
-            self.logger = loggers.RacingLeagueCharts(self)
-            session = Session(self.logger)
-            self.thread = SocketThread(session, self.config['f1_port'], self.status_bar, self.config)
+            try:
+                self.start_button.SetLabel('&Stop')
+                self.logger = loggers.RacingLeagueCharts(self)
+                session = Session(self.logger)
+                self.thread = SocketThread(session, self)
+            except:
+                self.start_button.SetLabel('&Start')
+                self.logger = None
+                self.thread = None
+
+                wx.MessageBox('There was an error starting the telemetry collection. '
+                              'Please make sure the game is not running and try again.', 'Error',
+                              wx.OK | wx.ICON_ERROR)
+                return False
 
     def quit_app(self, event):
         if self.thread is not None:

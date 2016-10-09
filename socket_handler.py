@@ -6,12 +6,13 @@ import threading
 
 
 class SocketThread(threading.Thread):
-    def __init__(self, session, port, status_bar, config):
+    def __init__(self, session, parent):
         threading.Thread.__init__(self)
         self.session = session
-        self.status_bar = status_bar
+        self.status_bar = parent.status_bar
         self.running = True
         self.has_received_packets = False
+        self.parent = parent
 
         self.session_type = None
         self.track_length = None
@@ -20,12 +21,12 @@ class SocketThread(threading.Thread):
         #open socket
         self.socket = socket(AF_INET, SOCK_DGRAM)
         self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.socket.bind(('', int(port)))
+        self.socket.bind(('', int(parent.config['f1_port'])))
 
-        if config['forwarding_enabled'] and config['forwarding_host'] and config['forwarding_port']:
+        if parent.config['forwarding_enabled'] and parent.config['forwarding_host'] and parent.config['forwarding_port']:
             self.forwarding_socket = socket(AF_INET, SOCK_DGRAM)
             self.forwarding_socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-            self.forwarding_socket.connect((config['forwarding_host'], int(config['forwarding_port'])))
+            self.forwarding_socket.connect((parent.config['forwarding_host'], int(parent.config['forwarding_port'])))
 
         self.daemon = True
         self.start()
